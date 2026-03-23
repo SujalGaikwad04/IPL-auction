@@ -1,0 +1,21 @@
+{
+  "name": "ipl-auction-server",
+  "version": "1.0.0",
+  "description": "IPL Auction Management System — Node.js + Express backend",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^4.22.1",
+    "mysql2": "^3.20.0",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPL Auction 2026 - Live Auction Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --line:rgba(255,255,255,.08);
+      --text:#f5f7ff;
+      --muted:#9ba9d1;
+      --blue:#43b4ff;
+      --purple:#8a5cff;
+      --shadow:0 12px 40px rgba(0,0,0,.35);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:'Inter',sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(138,92,255,.18), transparent 30%),
+        radial-gradient(circle at 100% 20%, rgba(67,180,255,.18), transparent 25%),
+        linear-gradient(180deg,#050b16 0%, #091225 45%, #07101e 100%);
+      min-height:100vh;
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+      background-size:60px 60px;
+      opacity:.35;
+    }
+    .app{max-width:1500px;margin:0 auto;padding:20px}
+    .header{
+      position:sticky;top:0;z-index:20;backdrop-filter:blur(18px);
+      background:linear-gradient(135deg, rgba(16,28,57,.82), rgba(28,18,62,.78));
+      border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);
+      padding:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;
+    }
+    .brand{display:flex;align-items:center;gap:14px}
+    .logo{
+      width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--purple));
+      display:grid;place-items:center;font-size:21px;box-shadow:0 0 20px rgba(138,92,255,.28);
+    }
+    .brand h1{font-size:1.15rem;margin:0;font-weight:800}
+    .brand p,.mini{color:var(--muted)}
+    .brand p{margin:2px 0 0;font-size:.88rem}
+    .header-center,.status{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .badge{
+      padding:10px 14px;border-radius:999px;border:1px solid rgba(102,228,255,.22);
+      background:rgba(102,228,255,.08);color:#dff8ff;font-size:.9rem;font-weight:700;
+    }
+    .pulse{
+      width:10px;height:10px;border-radius:50%;background:#41ff9b;display:inline-block;box-shadow:0 0 18px #41ff9b;
+      margin-right:8px;vertical-align:middle;
+    }
+    .icon-btn{
+      width:40px;height:40px;border-radius:14px;border:1px solid var(--line);
+      background:rgba(255,255,255,.04);display:grid;place-items:center;color:#d8e1ff;
+    }
+    .grid-main{display:grid;grid-template-columns:1.2fr .9fr .75fr;gap:18px;margin-bottom:18px}
+    .card{
+      background:linear-gradient(180deg, rgba(14,23,48,.88), rgba(10,17,35,.9));
+      border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;position:relative;overflow:hidden;
+    }
+    .section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+    .section-title h2{margin:0;font-size:1.02rem}
+    .chip{padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.05);font-size:.8rem;color:var(--muted);border:1px solid var(--line)}
+    .player-top{display:grid;grid-template-columns:190px 1fr;gap:20px;align-items:center}
+    .player-image{
+      width:100%;aspect-ratio:4/4.6;border-radius:24px;
+      background:linear-gradient(160deg,#162649,#091225);border:1px solid rgba(255,255,255,.08);
+      display:flex;align-items:flex-end;justify-content:center;padding-bottom:12px;font-size:96px;
+    }
+    .player-name{margin:0 0 10px;font-size:2rem;line-height:1.06;font-weight:800}
+    .player-meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+    .tag{
+      padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);
+      font-size:.86rem;color:#e5ebff;
+    }
+    .player-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+    .stat{padding:14px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+    .stat strong{display:block;font-size:1.05rem;margin-top:6px}
+    .bid-hero{text-align:center;padding:10px 0 6px}
+    .big-price{font-size:3.1rem;line-height:1;font-weight:800;margin:8px 0;color:#ecfbff}
+    .lead-team{
+      display:inline-flex;align-items:center;gap:10px;padding:12px 16px;border-radius:18px;
+      background:linear-gradient(135deg, rgba(138,92,255,.16), rgba(67,180,255,.10));
+      border:1px solid rgba(138,92,255,.28);margin-top:8px;font-weight:700;
+    }
+    .sold-banner{
+      margin-top:14px;padding:14px 16px;border-radius:18px;border:1px solid rgba(34,197,94,.25);
+      background:rgba(34,197,94,.10);color:#dfffe8;font-weight:800;display:none;
+    }
+    .timer{margin:18px 0 8px;padding:16px;border-radius:20px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+    .timer-time{font-size:2.1rem;font-weight:800;margin:0 0 10px;color:#ffd7e2}
+    .progress{height:12px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;border:1px solid rgba(255,255,255,.05)}
+    .progress > span{
+      display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff5ca8,#ff8367,#ffc44d);border-radius:999px;transition:width .8s linear;
+    }
+    .lock-note{margin-top:10px;color:#ffc8d7;font-size:.86rem;display:none}
+    .mini-grid{margin-top:16px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .mini-card{padding:14px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--line);text-align:left}
+    .mini-card strong{display:block;font-size:1.1rem;margin-top:6px}
+    .summary-box{
+      margin-top:16px;padding:16px;border-radius:18px;border:1px solid rgba(102,228,255,.18);background:rgba(102,228,255,.06);
+    }
+    .summary-box ul{padding-left:18px;margin:10px 0 0;color:#dfe9ff}
+    .summary-box li{margin:6px 0}
+    .history-list{display:flex;flex-direction:column;gap:10px;max-height:465px;overflow:auto;padding-right:6px}
+    .history-item{
+      display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line);
+    }
+    .team-dot{
+      width:42px;height:42px;border-radius:14px;display:grid;place-items:center;
+      background:linear-gradient(135deg, rgba(67,180,255,.22), rgba(138,92,255,.18));font-weight:800;
+    }
+    .history-item strong{display:block}
+    .history-item time{color:var(--muted);font-size:.82rem}
+    .price-pill{
+      padding:8px 10px;border-radius:999px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.18);
+      color:#dfffe8;font-weight:700;font-size:.88rem;
+    }
+    .teams-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+    .team-card{
+      padding:16px;border-radius:20px;background:linear-gradient(180deg, rgba(16,27,54,.85), rgba(9,16,34,.92));
+      border:1px solid var(--line);box-shadow:var(--shadow);position:relative;
+    }
+    .team-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .team-logo{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.06);display:grid;place-items:center;font-weight:800}
+    .team-card h3{margin:0;font-size:1rem}
+    .team-card p{margin:5px 0 0;color:var(--muted);font-size:.9rem}
+    .bid-btn{
+      width:100%;margin-top:12px;border:none;border-radius:14px;padding:12px 14px;font-weight:700;
+      color:white;background:linear-gradient(135deg,var(--blue),var(--purple));cursor:pointer;
+    }
+    .bid-btn:disabled{
+      opacity:.45; cursor:not-allowed; background:linear-gradient(135deg,#4b5775,#3b4258);
+    }
+    .leading{border-color:rgba(138,92,255,.35);box-shadow:var(--shadow),0 0 28px rgba(138,92,255,.18)}
+    .leading::before{
+      content:"Leading";position:absolute;top:12px;right:12px;font-size:.72rem;font-weight:700;color:#f0e7ff;
+      padding:6px 9px;border-radius:999px;background:rgba(138,92,255,.18);border:1px solid rgba(138,92,255,.22);
+    }
+    .lower-grid{display:grid;grid-template-columns:1.4fr .8fr;gap:18px}
+    .purse-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+    .purse-card{padding:16px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+    .purse-card h4{margin:0 0 10px}
+    .purse-card .row{display:flex;justify-content:space-between;gap:8px;margin:8px 0;color:#dfe7ff;font-size:.91rem}
+    .purse-card .row span:last-child{font-weight:700}
+    .admin-controls{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .action{padding:14px 16px;border-radius:16px;border:none;font-weight:800;cursor:pointer;color:white}
+    .blue{background:linear-gradient(135deg,#2188ff,#5848ff)}
+    .green{background:linear-gradient(135deg,#18b35d,#1dd884)}
+    .red{background:linear-gradient(135deg,#dc3f56,#ff6b6b)}
+    .orange{background:linear-gradient(135deg,#d68b11,#ffb84d)}
+    .footer-note{margin-top:14px;padding:14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);font-size:.92rem}
+    .toast{
+      position:fixed;right:20px;bottom:20px;z-index:50;min-width:260px;max-width:360px;padding:14px 16px;border-radius:16px;
+      background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.28);color:#ffe8ea;box-shadow:var(--shadow);display:none;
+    }
+    .modal-overlay{
+      position:fixed; inset:0; background:rgba(4,8,18,.68); backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center; z-index:60; padding:20px;
+    }
+    .modal{
+      width:min(420px,100%); border-radius:24px; background:linear-gradient(180deg, rgba(17,28,58,.96), rgba(8,14,31,.98));
+      border:1px solid var(--line); box-shadow:var(--shadow); padding:24px;
+    }
+    .modal h3{margin:0 0 10px;font-size:1.3rem}
+    .modal p{margin:0;color:#dce5ff;line-height:1.55}
+    .modal-actions{display:flex; gap:12px; margin-top:18px}
+    .modal-actions button{flex:1; border:none; border-radius:14px; padding:12px 14px; font-weight:800; cursor:pointer}
+    .btn-cancel{background:#263252;color:#f0f4ff}
+    .btn-confirm{background:linear-gradient(135deg,#2188ff,#7a59ff);color:#fff}
+    .screen-lock{
+      position:fixed; inset:0; background:rgba(4,8,18,.72); backdrop-filter:blur(5px); z-index:40; display:none; align-items:center; justify-content:center; padding:20px; text-align:center;
+    }
+    .lock-card{
+      width:min(520px,100%); padding:28px; border-radius:24px; background:linear-gradient(180deg, rgba(17,28,58,.96), rgba(8,14,31,.98));
+      border:1px solid rgba(255,255,255,.08); box-shadow:var(--shadow);
+    }
+    .lock-card h3{margin:0 0 10px;font-size:1.45rem}
+    .lock-card p{margin:0;color:#dfe7ff;line-height:1.6}
+    @media (max-width:1200px){
+      .grid-main,.lower-grid{grid-template-columns:1fr}
+      .teams-grid{grid-template-columns:repeat(3,1fr)}
+      .purse-grid{grid-template-columns:repeat(3,1fr)}
+    }
+    @media (max-width:860px){
+      .header{flex-direction:column;align-items:stretch}
+      .player-top{grid-template-columns:1fr}
+      .player-image{max-width:280px}
+      .player-stats,.teams-grid,.purse-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:560px){
+      .app{padding:14px}
+      .big-price{font-size:2.35rem}
+      .timer-time{font-size:1.7rem}
+      .player-name{font-size:1.6rem}
+      .player-stats,.teams-grid,.purse-grid,.admin-controls,.mini-grid{grid-template-columns:1fr}
+      .modal-actions{display:grid}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <div class="logo">🏏</div>
+        <div>
+          <h1>IPL Auction 2026</h1>
+          <p>Professional Live Auction Management System</p>
+        </div>
+      </div>
+      <div class="header-center">
+        <div class="badge"><span class="pulse"></span>Live Auction</div>
+        <div class="badge" id="player-number-badge">Player 27 / 80</div>
+      </div>
+      <div class="status">
+        <div>
+          <strong>Admin Panel</strong><br>
+          <small class="mini">Real-time control dashboard</small>
+        </div>
+        <div class="icon-btn">🔔</div>
+        <div class="icon-btn">⚙️</div>
+      </div>
+    </header>
+
+    <section class="grid-main">
+      <article class="card">
+        <div class="section-title">
+          <h2>Current Player</h2>
+          <span class="chip">Now on stage</span>
+        </div>
+        <div class="player-top">
+          <div class="player-image">🧍</div>
+          <div>
+            <h3 class="player-name" id="player-name">Jasprit Bumrah</h3>
+            <div class="player-meta">
+              <span class="tag">🇮🇳 India</span>
+              <span class="tag">Bowler</span>
+              <span class="tag">Base Price: ₹2 Cr</span>
+              <span class="tag">Previous Team: MI</span>
+            </div>
+            <p class="mini">Elite pace bowler with strong death-over control and proven IPL match-winning record.</p>
+            <div class="player-stats">
+              <div class="stat"><span class="mini">Age</span><strong>32</strong></div>
+              <div class="stat"><span class="mini">Wickets</span><strong>165</strong></div>
+              <div class="stat"><span class="mini">Matches</span><strong>133</strong></div>
+              <div class="stat"><span class="mini">Economy</span><strong>7.30</strong></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="section-title">
+          <h2>Live Bid Panel</h2>
+          <span class="chip">Core bidding area</span>
+        </div>
+        <div class="bid-hero">
+          <div class="mini">Current Bid Amount</div>
+          <div class="big-price" id="current-bid">₹4.35 Cr</div>
+          <div class="lead-team" id="leading-team">🏆 Leading Team: MI</div>
+          <div class="sold-banner" id="sold-banner"></div>
+          <div class="timer">
+            <div class="mini">Time Left</div>
+            <p class="timer-time" id="timer-text">02:40</p>
+            <div class="progress"><span id="timer-progress"></span></div>
+            <div class="lock-note" id="lock-note">Bidding is locked because timer ended.</div>
+          </div>
+          <div class="mini-grid">
+            <div class="mini-card"><span class="mini">Minimum Increment</span><strong>+ ₹15 Lakh</strong></div>
+            <div class="mini-card"><span class="mini">Total Bid Count</span><strong id="bid-count">09 Bids</strong></div>
+          </div>
+          <div class="summary-box">
+            <strong>Current Auction Summary</strong>
+            <ul>
+              <li>Player: <span id="summary-player">Jasprit Bumrah</span></li>
+              <li>Current Bid: <span id="summary-bid">₹4.35 Cr</span></li>
+              <li>Leading Team: <span id="summary-team">MI</span></li>
+              <li>Time Left: <span id="summary-time">02:40</span></li>
+              <li>Status: <span id="summary-status">Active</span></li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <aside class="card">
+        <div class="section-title">
+          <h2>Bid History</h2>
+          <span class="chip">Live verification log</span>
+        </div>
+        <div class="history-list" id="history-list">
+          <div class="history-item">
+            <div class="team-dot">MI</div>
+            <div><strong>Mumbai Indians raised bid</strong><time>just now</time></div>
+            <div class="price-pill">₹4.35 Cr</div>
+          </div>
+          <div class="history-item">
+            <div class="team-dot">CSK</div>
+            <div><strong>Chennai Super Kings bid</strong><time>10 sec ago</time></div>
+            <div class="price-pill">₹4.20 Cr</div>
+          </div>
+          <div class="history-item">
+            <div class="team-dot">RCB</div>
+            <div><strong>Royal Challengers Bengaluru bid</strong><time>22 sec ago</time></div>
+            <div class="price-pill">₹4.05 Cr</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="teams-grid" id="teams-grid">
+      <div class="team-card leading" data-team="MI" data-name="Mumbai Indians" data-purse="78"><div class="team-head"><div><h3>Mumbai Indians</h3><p>Purse: ₹<span class="team-purse">78.00</span> Cr</p></div><div class="team-logo">MI</div></div><button class="bid-btn">Place Bid</button></div>
+      <div class="team-card" data-team="CSK" data-name="Chennai Super Kings" data-purse="82"><div class="team-head"><div><h3>Chennai Super Kings</h3><p>Purse: ₹<span class="team-purse">82.00</span> Cr</p></div><div class="team-logo">CSK</div></div><button class="bid-btn">Place Bid</button></div>
+      <div class="team-card" data-team="RCB" data-name="Royal Challengers Bengaluru" data-purse="75"><div class="team-head"><div><h3>Royal Challengers</h3><p>Purse: ₹<span class="team-purse">75.00</span> Cr</p></div><div class="team-logo">RCB</div></div><button class="bid-btn">Place Bid</button></div>
+      <div class="team-card" data-team="KKR" data-name="Kolkata Knight Riders" data-purse="86"><div class="team-head"><div><h3>Kolkata Knight Riders</h3><p>Purse: ₹<span class="team-purse">86.00</span> Cr</p></div><div class="team-logo">KKR</div></div><button class="bid-btn">Place Bid</button></div>
+      <div class="team-card" data-team="DC" data-name="Delhi Capitals" data-purse="80"><div class="team-head"><div><h3>Delhi Capitals</h3><p>Purse: ₹<span class="team-purse">80.00</span> Cr</p></div><div class="team-logo">DC</div></div><button class="bid-btn">Place Bid</button></div>
+      <div class="team-card" data-team="RR" data-name="Rajasthan Royals" data-purse="83"><div class="team-head"><div><h3>Rajasthan Royals</h3><p>Purse: ₹<span class="team-purse">83.00</span> Cr</p></div><div class="team-logo">RR</div></div><button class="bid-btn">Place Bid</button></div>
+      <div class="team-card" data-team="PBKS" data-name="Punjab Kings" data-purse="85"><div class="team-head"><div><h3>Punjab Kings</h3><p>Purse: ₹<span class="team-purse">85.00</span> Cr</p></div><div class="team-logo">PBKS</div></div><button class="bid-btn">Place Bid</button></div>
+      <div class="team-card" data-team="SRH" data-name="Sunrisers Hyderabad" data-purse="79"><div class="team-head"><div><h3>Sunrisers Hyderabad</h3><p>Purse: ₹<span class="team-purse">79.00</span> Cr</p></div><div class="team-logo">SRH</div></div><button class="bid-btn">Place Bid</button></div>
+      <div class="team-card" data-team="GT" data-name="Gujarat Titans" data-purse="81"><div class="team-head"><div><h3>Gujarat Titans</h3><p>Purse: ₹<span class="team-purse">81.00</span> Cr</p></div><div class="team-logo">GT</div></div><button class="bid-btn">Place Bid</button></div>
+      <div class="team-card" data-team="LSG" data-name="Lucknow Super Giants" data-purse="84"><div class="team-head"><div><h3>Lucknow Super Giants</h3><p>Purse: ₹<span class="team-purse">84.00</span> Cr</p></div><div class="team-logo">LSG</div></div><button class="bid-btn">Place Bid</button></div>
+    </section>
+
+    <section class="lower-grid">
+      <article class="card">
+        <div class="section-title"><h2>Team Purse Overview</h2><span class="chip">2 rows × 5 team summary cards</span></div>
+        <div class="purse-grid">
+          <div class="purse-card"><h4>MI</h4><div class="row"><span>Players</span><span>8</span></div><div class="row"><span>Spent</span><span>₹32 Cr</span></div><div class="row"><span>Remaining</span><span class="purse-summary" data-team="MI">₹78.00 Cr</span></div></div>
+          <div class="purse-card"><h4>CSK</h4><div class="row"><span>Players</span><span>9</span></div><div class="row"><span>Spent</span><span>₹28 Cr</span></div><div class="row"><span>Remaining</span><span class="purse-summary" data-team="CSK">₹82.00 Cr</span></div></div>
+          <div class="purse-card"><h4>RCB</h4><div class="row"><span>Players</span><span>10</span></div><div class="row"><span>Spent</span><span>₹35 Cr</span></div><div class="row"><span>Remaining</span><span class="purse-summary" data-team="RCB">₹75.00 Cr</span></div></div>
+          <div class="purse-card"><h4>KKR</h4><div class="row"><span>Players</span><span>7</span></div><div class="row"><span>Spent</span><span>₹24 Cr</span></div><div class="row"><span>Remaining</span><span class="purse-summary" data-team="KKR">₹86.00 Cr</span></div></div>
+          <div class="purse-card"><h4>DC</h4><div class="row"><span>Players</span><span>8</span></div><div class="row"><span>Spent</span><span>₹30 Cr</span></div><div class="row"><span>Remaining</span><span class="purse-summary" data-team="DC">₹80.00 Cr</span></div></div>
+          <div class="purse-card"><h4>RR</h4><div class="row"><span>Players</span><span>7</span></div><div class="row"><span>Spent</span><span>₹27 Cr</span></div><div class="row"><span>Remaining</span><span class="purse-summary" data-team="RR">₹83.00 Cr</span></div></div>
+          <div class="purse-card"><h4>PBKS</h4><div class="row"><span>Players</span><span>6</span></div><div class="row"><span>Spent</span><span>₹25 Cr</span></div><div class="row"><span>Remaining</span><span class="purse-summary" data-team="PBKS">₹85.00 Cr</span></div></div>
+          <div class="purse-card"><h4>SRH</h4><div class="row"><span>Players</span><span>9</span></div><div class="row"><span>Spent</span><span>₹31 Cr</span></div><div class="row"><span>Remaining</span><span class="purse-summary" data-team="SRH">₹79.00 Cr</span></div></div>
+          <div class="purse-card"><h4>GT</h4><div class="row"><span>Players</span><span>8</span></div><div class="row"><span>Spent</span><span>₹29 Cr</span></div><div class="row"><span>Remaining</span><span class="purse-summary" data-team="GT">₹81.00 Cr</span></div></div>
+          <div class="purse-card"><h4>LSG</h4><div class="row"><span>Players</span><span>8</span></div><div class="row"><span>Spent</span><span>₹26 Cr</span></div><div class="row"><span>Remaining</span><span class="purse-summary" data-team="LSG">₹84.00 Cr</span></div></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="section-title"><h2>Admin Controls</h2><span class="chip">Visible only for admin</span></div>
+        <div class="admin-controls">
+          <button class="action blue" id="start-timer">Start Timer</button>
+          <button class="action orange" id="pause-timer">Pause Timer</button>
+          <button class="action green" id="mark-sold">Mark as Sold</button>
+          <button class="action red" id="mark-unsold">Mark as Unsold</button>
+          <button class="action blue" id="next-player">Next Player</button>
+          <button class="action red" id="end-auction">End Auction</button>
+        </div>
+        <div class="footer-note">Added logic: bid disabled when purse is too low, sold confirmation popup, sold result banner, current player number, and auto lock when timer ends.</div>
+      </article>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <h3 id="modal-title">Are you sure?</h3>
+      <p id="modal-message">Please confirm this action.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="modal-cancel">Cancel</button>
+        <button class="btn-confirm" id="modal-confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen-lock" id="screen-lock">
+    <div class="lock-card">
+      <h3>Timer Ended · Bidding Locked</h3>
+      <p>The auction screen is locked to prevent last-second mistakes. Admin can now confirm SOLD or UNSOLD safely.</p>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      totalPlayers: 80,
+      currentPlayerNo: 27,
+      playerName: "Jasprit Bumrah",
+      currentBid: 4.35,
+      increment: 0.15,
+      leadingTeam: "MI",
+      leadingTeamName: "Mumbai Indians",
+      bidCount: 9,
+      timeLeft: 160,
+      maxTime: 160,
+      timerRunning: false,
+      isLocked: false,
+      saleClosed: false,
+      teams: {
+        MI: { name: "Mumbai Indians", purse: 78.00 },
+        CSK: { name: "Chennai Super Kings", purse: 82.00 },
+        RCB: { name: "Royal Challengers Bengaluru", purse: 75.00 },
+        KKR: { name: "Kolkata Knight Riders", purse: 86.00 },
+        DC: { name: "Delhi Capitals", purse: 80.00 },
+        RR: { name: "Rajasthan Royals", purse: 83.00 },
+        PBKS: { name: "Punjab Kings", purse: 85.00 },
+        SRH: { name: "Sunrisers Hyderabad", purse: 79.00 },
+        GT: { name: "Gujarat Titans", purse: 81.00 },
+        LSG: { name: "Lucknow Super Giants", purse: 84.00 }
+      }
+    };
+    let timerInterval = null;
+    let modalAction = null;
+    const currentBidEl = document.getElementById("current-bid");
+    const leadingTeamEl = document.getElementById("leading-team");
+    const timerTextEl = document.getElementById("timer-text");
+    const timerProgressEl = document.getElementById("timer-progress");
+    const bidCountEl = document.getElementById("bid-count");
+    const summaryBidEl = document.getElementById("summary-bid");
+    const summaryTeamEl = document.getElementById("summary-team");
+    const summaryTimeEl = document.getElementById("summary-time");
+    const summaryStatusEl = document.getElementById("summary-status");
+    const historyListEl = document.getElementById("history-list");
+    const toastEl = document.getElementById("toast");
+    const soldBannerEl = document.getElementById("sold-banner");
+    const lockScreenEl = document.getElementById("screen-lock");
+    const lockNoteEl = document.getElementById("lock-note");
+    const playerNumberBadgeEl = document.getElementById("player-number-badge");
+    const summaryPlayerEl = document.getElementById("summary-player");
+    const playerNameEl = document.getElementById("player-name");
+
+    function formatCr(value){ return "₹" + Number(value).toFixed(2) + " Cr"; }
+    function formatTime(seconds){
+      const min = Math.floor(seconds / 60).toString().padStart(2,"0");
+      const sec = Math.floor(seconds % 60).toString().padStart(2,"0");
+      return `${min}:${sec}`;
+    }
+    function showToast(message){
+      toastEl.textContent = message;
+      toastEl.style.display = "block";
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toastEl.style.display = "none", 2500);
+    }
+    function openConfirm(title, message, callback){
+      document.getElementById("modal-title").textContent = title;
+      document.getElementById("modal-message").textContent = message;
+      document.getElementById("modal-overlay").style.display = "flex";
+      modalAction = callback;
+    }
+    function closeConfirm(){
+      document.getElementById("modal-overlay").style.display = "none";
+      modalAction = null;
+    }
+    document.getElementById("modal-cancel").addEventListener("click", closeConfirm);
+    document.getElementById("modal-confirm").addEventListener("click", () => {
+      if (typeof modalAction === "function") modalAction();
+      closeConfirm();
+    });
+
+    function renderHeader(){ playerNumberBadgeEl.textContent = `Player ${state.currentPlayerNo} / ${state.totalPlayers}`; }
+    function renderBidPanel(){
+      currentBidEl.textContent = formatCr(state.currentBid);
+      leadingTeamEl.textContent = `🏆 Leading Team: ${state.leadingTeam}`;
+      bidCountEl.textContent = `${String(state.bidCount).padStart(2, "0")} Bids`;
+      summaryBidEl.textContent = formatCr(state.currentBid);
+      summaryTeamEl.textContent = state.leadingTeam;
+      summaryTimeEl.textContent = formatTime(state.timeLeft);
+      summaryPlayerEl.textContent = state.playerName;
+      playerNameEl.textContent = state.playerName;
+    }
+    function renderTimer(){
+      timerTextEl.textContent = formatTime(state.timeLeft);
+      summaryTimeEl.textContent = formatTime(state.timeLeft);
+      const percent = Math.max(0, (state.timeLeft / state.maxTime) * 100);
+      timerProgressEl.style.width = percent + "%";
+    }
+    function renderTeams(){
+      document.querySelectorAll(".team-card").forEach(card => {
+        const code = card.dataset.team;
+        const team = state.teams[code];
+        const btn = card.querySelector(".bid-btn");
+        const purseEl = card.querySelector(".team-purse");
+        purseEl.textContent = team.purse.toFixed(2);
+        const nextBid = state.currentBid + state.increment;
+        const disabledForBalance = team.purse < nextBid;
+        const disabled = disabledForBalance || state.isLocked || state.saleClosed;
+        btn.disabled = disabled;
+        btn.textContent = disabledForBalance ? "Insufficient Balance" : (state.saleClosed ? "Bidding Closed" : (state.isLocked ? "Locked" : "Place Bid"));
+        card.classList.toggle("leading", code === state.leadingTeam);
+      });
+      document.querySelectorAll(".purse-summary").forEach(el => {
+        const code = el.dataset.team;
+        el.textContent = formatCr(state.teams[code].purse);
+      });
+    }
+    function addHistory(code, message, amount){
+      const item = document.createElement("div");
+      item.className = "history-item";
+      item.innerHTML = `
+        <div class="team-dot">${code}</div>
+        <div><strong>${message}</strong><time>just now</time></div>
+        <div class="price-pill">${amount > 0 ? formatCr(amount) : "—"}</div>
+      `;
+      historyListEl.prepend(item);
+    }
+    function placeBid(teamCode){
+      const team = state.teams[teamCode];
+      if (state.isLocked || state.saleClosed){ showToast("Bidding is locked."); return; }
+      const nextBid = +(state.currentBid + state.increment).toFixed(2);
+      if (team.purse < nextBid){ showToast("Insufficient balance"); renderTeams(); return; }
+      state.currentBid = nextBid;
+      state.leadingTeam = teamCode;
+      state.leadingTeamName = team.name;
+      state.bidCount += 1;
+      state.timeLeft = state.maxTime;
+      addHistory(teamCode, `${team.name} raised bid`, nextBid);
+      renderAll();
+    }
+    function stopTimer(){ state.timerRunning = false; clearInterval(timerInterval); }
+    function startTimer(){
+      if (state.saleClosed) return;
+      if (state.timeLeft <= 0) state.timeLeft = state.maxTime;
+      if (state.timerRunning) return;
+      state.timerRunning = true;
+      timerInterval = setInterval(() => {
+        if (!state.timerRunning) return;
+        if (state.timeLeft > 0){ state.timeLeft -= 1; renderTimer(); }
+        if (state.timeLeft <= 0){
+          stopTimer();
+          state.isLocked = true;
+          lockScreenEl.style.display = "flex";
+          lockNoteEl.style.display = "block";
+          summaryStatusEl.textContent = "Locked - Timer Ended";
+          renderTeams();
+          showToast("Timer ended. Screen locked.");
+        }
+      }, 1000);
+    }
+    function markSold(){
+      if (!state.leadingTeam || state.leadingTeam === "—"){ showToast("No leading team available."); return; }
+      state.saleClosed = true;
+      state.isLocked = true;
+      stopTimer();
+      state.teams[state.leadingTeam].purse = +(state.teams[state.leadingTeam].purse - state.currentBid).toFixed(2);
+      soldBannerEl.style.display = "block";
+      soldBannerEl.style.background = "rgba(34,197,94,.10)";
+      soldBannerEl.style.borderColor = "rgba(34,197,94,.25)";
+      soldBannerEl.style.color = "#dfffe8";
+      soldBannerEl.textContent = `Sold to ${state.leadingTeam} for ${formatCr(state.currentBid)}`;
+      summaryStatusEl.textContent = `Sold to ${state.leadingTeam}`;
+      addHistory(state.leadingTeam, `Sold to ${state.leadingTeamName}`, state.currentBid);
+      lockScreenEl.style.display = "none";
+      renderAll();
+    }
+    function markUnsold(){
+      state.saleClosed = true;
+      state.isLocked = true;
+      stopTimer();
+      soldBannerEl.style.display = "block";
+      soldBannerEl.style.background = "rgba(239,68,68,.10)";
+      soldBannerEl.style.borderColor = "rgba(239,68,68,.25)";
+      soldBannerEl.style.color = "#ffe7ea";
+      soldBannerEl.textContent = `Unsold · ${state.playerName} received no final confirmation`;
+      summaryStatusEl.textContent = "Unsold";
+      addHistory("—", `${state.playerName} marked unsold`, 0);
+      lockScreenEl.style.display = "none";
+      renderAll();
+    }
+    function renderAll(){ renderHeader(); renderBidPanel(); renderTimer(); renderTeams(); }
+
+    document.querySelectorAll(".team-card").forEach(card => {
+      card.querySelector(".bid-btn").addEventListener("click", () => placeBid(card.dataset.team));
+    });
+    document.getElementById("start-timer").addEventListener("click", () => {
+      state.isLocked = false;
+      lockScreenEl.style.display = "none";
+      lockNoteEl.style.display = "none";
+      summaryStatusEl.textContent = state.saleClosed ? "Closed" : "Active";
+      renderTeams();
+      startTimer();
+    });
+    document.getElementById("pause-timer").addEventListener("click", () => { stopTimer(); showToast("Timer paused."); });
+    document.getElementById("mark-sold").addEventListener("click", () => openConfirm("Are you sure?", "Confirm SOLD for the current player?", markSold));
+    document.getElementById("mark-unsold").addEventListener("click", () => openConfirm("Are you sure?", "Confirm UNSOLD for the current player?", markUnsold));
+    document.getElementById("end-auction").addEventListener("click", () => {
+      openConfirm("Are you sure?", "This will stop the auction screen.", () => {
+        stopTimer();
+        state.isLocked = true;
+        state.saleClosed = true;
+        summaryStatusEl.textContent = "Auction Ended";
+        lockScreenEl.style.display = "flex";
+        lockScreenEl.querySelector("h3").textContent = "Auction Ended";
+        lockScreenEl.querySelector("p").textContent = "The live auction has been closed by admin.";
+        renderTeams();
+      });
+    });
+    document.getElementById("next-player").addEventListener("click", () => {
+      openConfirm("Load next player?", "This will reset bid state and move to the next player.", () => {
+        stopTimer();
+        state.currentPlayerNo += 1;
+        state.currentBid = 2.00;
+        state.leadingTeam = "—";
+        state.leadingTeamName = "";
+        state.bidCount = 0;
+        state.timeLeft = state.maxTime;
+        state.timerRunning = false;
+        state.isLocked = false;
+        state.saleClosed = false;
+        state.playerName = "Next Player";
+        soldBannerEl.style.display = "none";
+        summaryStatusEl.textContent = "Active";
+        lockScreenEl.style.display = "none";
+        lockNoteEl.style.display = "none";
+        addHistory("SYS", "Moved to next player", state.currentBid);
+        renderAll();
+      });
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>

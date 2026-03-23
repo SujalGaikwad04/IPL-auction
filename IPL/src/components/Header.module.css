@@ -1,0 +1,78 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 22px;
+  margin-bottom: 18px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: linear-gradient(135deg, rgba(16,28,57,.82), rgba(28,18,62,.78));
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: grid;
+  place-items: center;
+  font-size: 21px;
+  box-shadow: 0 0 20px rgba(138,92,255,.28);
+  flex-shrink: 0;
+}
+
+.brandName {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.brandSub {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: .88rem;
+}
+
+.headerCenter {
+  text-align: center;
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: .88rem;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+@media (max-width: 860px) {
+  .header { flex-direction: column; align-items: stretch; }
+  .headerCenter, .status { text-align: left; justify-content: flex-start; }
+}

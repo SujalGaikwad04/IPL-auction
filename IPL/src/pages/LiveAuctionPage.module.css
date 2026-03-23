@@ -1,0 +1,149 @@
+.app { max-width: 1500px; margin: 0 auto; padding: 20px; }
+
+.header {
+  position: sticky; top: 0; z-index: 20; backdrop-filter: blur(18px);
+  background: linear-gradient(135deg, rgba(16,28,57,.82), rgba(28,18,62,.78));
+  border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow);
+  padding: 16px 22px; display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-bottom: 18px; flex-wrap: wrap;
+}
+
+.brand { display: flex; align-items: center; gap: 14px; }
+.logo {
+  width: 44px; height: 44px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: grid; place-items: center; font-size: 21px; box-shadow: 0 0 20px rgba(138,92,255,.28);
+}
+.brand h1 { font-size: 1.15rem; margin: 0; font-weight: 800; }
+.brand p { color: var(--muted); margin: 2px 0 0; font-size: .88rem; }
+.mini { color: var(--muted); font-size: .84rem; }
+.headerCenter { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.status { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.badge {
+  padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(102,228,255,.22);
+  background: rgba(102,228,255,.08); color: #dff8ff; font-size: .9rem; font-weight: 700;
+}
+.iconBtn {
+  width: 40px; height: 40px; border-radius: 14px; border: 1px solid var(--line);
+  background: rgba(255,255,255,.04); display: grid; place-items: center; color: #d8e1ff; font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.gridMain { display: grid; grid-template-columns: 1.2fr .9fr .75fr; gap: 18px; margin-bottom: 18px; }
+
+.card {
+  background: linear-gradient(180deg, rgba(14,23,48,.88), rgba(10,17,35,.9));
+  border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 20px; position: relative; overflow: hidden;
+}
+
+.sectionTitle { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+.sectionTitle h2 { margin: 0; font-size: 1.02rem; }
+.chip { padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,.05); font-size: .8rem; color: var(--muted); border: 1px solid var(--line); }
+
+.playerTop { display: grid; grid-template-columns: 160px 1fr; gap: 18px; align-items: center; }
+.playerImage {
+  width: 100%; aspect-ratio: 4/4.5; border-radius: 20px;
+  background: linear-gradient(160deg, #162649, #091225); border: 1px solid rgba(255,255,255,.08);
+  display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; font-size: 80px;
+}
+.playerName { margin: 0 0 10px; font-size: 1.75rem; line-height: 1.06; font-weight: 800; }
+.playerMeta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.tag { padding: 7px 11px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.04); font-size: .82rem; color: #e5ebff; }
+.playerStats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 16px; }
+.stat { padding: 12px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+.stat strong { display: block; font-size: 1rem; margin-top: 5px; }
+
+.bidHero { text-align: center; padding: 8px 0 4px; }
+.bigPrice { font-size: 3rem; line-height: 1; font-weight: 800; margin: 6px 0; color: #ecfbff; }
+.leadTeam {
+  display: inline-flex; align-items: center; gap: 10px; padding: 11px 15px; border-radius: 16px;
+  background: linear-gradient(135deg, rgba(138,92,255,.16), rgba(67,180,255,.10));
+  border: 1px solid rgba(138,92,255,.28); margin-top: 8px; font-weight: 700; font-size: .92rem;
+}
+.soldBanner {
+  margin-top: 12px; padding: 13px 15px; border-radius: 16px; border: 1px solid;
+  font-weight: 800; font-size: .9rem; text-align: center;
+}
+.timer { margin: 16px 0 8px; padding: 15px; border-radius: 18px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+.timerTime { font-size: 2rem; font-weight: 800; margin: 0 0 10px; color: #ffd7e2; }
+.progress { height: 11px; border-radius: 999px; background: rgba(255,255,255,.07); overflow: hidden; border: 1px solid rgba(255,255,255,.05); }
+.progress > span { display: block; height: 100%; background: linear-gradient(90deg, #ff5ca8, #ff8367, #ffc44d); border-radius: 999px; transition: width .8s linear; }
+.lockNote { margin-top: 10px; color: #ffc8d7; font-size: .84rem; }
+.miniGrid { margin-top: 14px; display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+.miniCard { padding: 12px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid var(--line); text-align: left; }
+.miniCard strong { display: block; font-size: 1rem; margin-top: 5px; }
+.summaryBox { margin-top: 14px; padding: 14px; border-radius: 16px; border: 1px solid rgba(102,228,255,.18); background: rgba(102,228,255,.06); text-align: left; }
+.summaryBox ul { padding-left: 16px; margin: 8px 0 0; color: #dfe9ff; }
+.summaryBox li { margin: 5px 0; font-size: .88rem; }
+
+.historyList { display: flex; flex-direction: column; gap: 10px; max-height: 465px; overflow: auto; padding-right: 4px; }
+.historyItem { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 13px; border-radius: 15px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+.teamDot { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; background: linear-gradient(135deg, rgba(67,180,255,.22), rgba(138,92,255,.18)); font-weight: 800; font-size: .8rem; }
+.historyItem strong { display: block; font-size: .9rem; }
+.historyItem time { color: var(--muted); font-size: .78rem; }
+.pricePill { padding: 7px 10px; border-radius: 999px; background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.18); color: #dfffe8; font-weight: 700; font-size: .84rem; }
+
+.teamsGrid { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; margin-bottom: 18px; }
+.teamCard { padding: 16px; border-radius: 20px; background: linear-gradient(180deg, rgba(16,27,54,.85), rgba(9,16,34,.92)); border: 1px solid var(--line); box-shadow: var(--shadow); position: relative; transition: border-color .2s; }
+.teamHead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.teamLogo { width: 42px; height: 42px; border-radius: 13px; background: rgba(255,255,255,.06); display: grid; place-items: center; font-weight: 800; font-size: .8rem; }
+.teamCard h3 { margin: 0; font-size: .95rem; }
+.teamCard p { margin: 5px 0 0; color: var(--muted); font-size: .85rem; }
+.bidBtn { width: 100%; margin-top: 12px; border: none; border-radius: 13px; padding: 11px 13px; font-weight: 700; color: white; background: linear-gradient(135deg, var(--blue), var(--purple)); cursor: pointer; font-size: .86rem; transition: filter .2s; }
+.bidBtn:hover:not(:disabled) { filter: brightness(1.08); }
+.bidBtn:disabled { opacity: .42; cursor: not-allowed; background: linear-gradient(135deg, #4b5775, #3b4258); }
+.leading { border-color: rgba(138,92,255,.35) !important; box-shadow: var(--shadow), 0 0 28px rgba(138,92,255,.18) !important; }
+.leading::before { content: "Leading"; position: absolute; top: 10px; right: 10px; font-size: .68rem; font-weight: 700; color: #f0e7ff; padding: 5px 8px; border-radius: 999px; background: rgba(138,92,255,.18); border: 1px solid rgba(138,92,255,.22); }
+
+.lowerGrid { display: grid; grid-template-columns: 1.4fr .8fr; gap: 18px; }
+.purseGrid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; }
+.purseCard { padding: 14px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+.purseCard h4 { margin: 0 0 8px; font-size: .92rem; }
+.row { display: flex; justify-content: space-between; gap: 8px; margin: 6px 0; color: #dfe7ff; font-size: .86rem; }
+.row span:last-child { font-weight: 700; }
+
+.adminControls { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+.action { padding: 13px 15px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer; color: white; font-size: .9rem; transition: filter .2s, transform .2s; }
+.action:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.blue { background: linear-gradient(135deg, #2188ff, #5848ff); }
+.green { background: linear-gradient(135deg, #18b35d, #1dd884); }
+.red { background: linear-gradient(135deg, #dc3f56, #ff6b6b); }
+.orange { background: linear-gradient(135deg, #d68b11, #ffb84d); }
+.footerNote { margin-top: 12px; padding: 12px; border-radius: 14px; background: rgba(255,255,255,.04); border: 1px solid var(--line); color: var(--muted); font-size: .86rem; }
+
+.toast { position: fixed; right: 20px; bottom: 20px; z-index: 50; min-width: 240px; max-width: 340px; padding: 14px 16px; border-radius: 15px; background: rgba(239,68,68,.14); border: 1px solid rgba(239,68,68,.28); color: #ffe8ea; box-shadow: var(--shadow); animation: fadeUp .3s ease; }
+
+.modalOverlay { position: fixed; inset: 0; background: rgba(4,8,18,.68); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 60; padding: 20px; }
+.modal { width: min(420px,100%); border-radius: 22px; background: linear-gradient(180deg, rgba(17,28,58,.96), rgba(8,14,31,.98)); border: 1px solid var(--line); box-shadow: var(--shadow); padding: 24px; }
+.modal h3 { margin: 0 0 10px; font-size: 1.3rem; }
+.modal p { margin: 0; color: #dce5ff; line-height: 1.55; }
+.modalActions { display: flex; gap: 12px; margin-top: 18px; }
+.modalActions button { flex: 1; border: none; border-radius: 13px; padding: 12px 14px; font-weight: 800; cursor: pointer; font-size: .95rem; }
+.btnCancel { background: #263252; color: #f0f4ff; }
+.btnConfirm { background: linear-gradient(135deg, #2188ff, #7a59ff); color: #fff; }
+
+.screenLock { position: fixed; inset: 0; background: rgba(4,8,18,.72); backdrop-filter: blur(5px); z-index: 40; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+.lockCard { width: min(520px,100%); padding: 28px; border-radius: 22px; background: linear-gradient(180deg, rgba(17,28,58,.96), rgba(8,14,31,.98)); border: 1px solid rgba(255,255,255,.08); box-shadow: var(--shadow); }
+.lockCard h3 { margin: 0 0 10px; font-size: 1.4rem; }
+.lockCard p { margin: 0; color: #dfe7ff; line-height: 1.6; }
+
+@media (max-width:1200px) {
+  .gridMain, .lowerGrid { grid-template-columns: 1fr; }
+  .teamsGrid { grid-template-columns: repeat(3,1fr); }
+  .purseGrid { grid-template-columns: repeat(3,1fr); }
+}
+@media (max-width:860px) {
+  .header { flex-direction: column; align-items: stretch; }
+  .playerTop { grid-template-columns: 1fr; }
+  .playerImage { max-width: 240px; }
+  .playerStats, .teamsGrid, .purseGrid { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width:560px) {
+  .app { padding: 14px; }
+  .bigPrice { font-size: 2.2rem; }
+  .timerTime { font-size: 1.65rem; }
+  .playerName { font-size: 1.5rem; }
+  .playerStats, .teamsGrid, .purseGrid, .adminControls, .miniGrid { grid-template-columns: 1fr; }
+  .modalActions { display: grid; }
+}
