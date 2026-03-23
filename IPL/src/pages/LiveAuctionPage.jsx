@@ -93,10 +93,17 @@ export default function LiveAuctionPage() {
   const nextPlayer = async () => {
     setSoldBanner(null);
     try {
-      const nextId = player ? player.id + 1 : 1;
+      // Find the next player who is still 'pending' or the next ID in sequence
+      const res = await fetch(`${API_BASE}/players`);
+      const allPlayers = await res.json();
+      const currentIdx = allPlayers.findIndex(p => p.id === player?.id);
+      const nextP = allPlayers[currentIdx + 1] || allPlayers[0];
+      
+      if (!nextP) return showToast('No more players left!');
+
       await fetch(`${API_BASE}/auction/start`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ player_id: nextId })
+        body: JSON.stringify({ player_id: nextP.id })
       });
       fetchState();
     } catch (e) { console.error(e); }
@@ -155,7 +162,14 @@ export default function LiveAuctionPage() {
           </div>
           {player ? (
             <div className={styles.playerTop}>
-              <div className={styles.playerImage}>🧍</div>
+              <div className={styles.playerImage}>
+                <img 
+                  src={`/players/${player.id}.jpeg`} 
+                  alt={player.name}
+                  onError={(e) => { e.target.onerror = null; e.target.src = "https://www.freeiconspng.com/uploads/no-image-icon-6.png"; }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '15px' }}
+                />
+              </div>
               <div>
                 <h3 className={styles.playerName}>{player.name}</h3>
                 <div className={styles.playerMeta}>

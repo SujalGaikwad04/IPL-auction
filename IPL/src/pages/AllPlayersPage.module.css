@@ -3,6 +3,11 @@
 .title h1 { font-size: 32px; margin: 0 0 10px 0; color: #eab308; }
 .title p { margin: 0; color: #94a3b8; }
 
+.controls { display: flex; gap: 15px; align-items: center; }
+.pdfButton { padding: 12px 24px; border-radius: 10px; background: #3b82f6; color: white; border: none; cursor: pointer; font-weight: 700; transition: all 0.2s; box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
+.pdfButton:hover:not(:disabled) { background: #2563eb; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); }
+.pdfButton:disabled { background: #334155; color: #64748b; cursor: not-allowed; opacity: 0.6; box-shadow: none; }
+
 .filterSelect { padding: 12px 24px; border-radius: 10px; background: #1e293b; color: white; border: 1px solid #334155; cursor: pointer; font-weight: 600; outline: none; transition: border-color 0.2s; }
 .filterSelect:focus { border-color: #3b82f6; }
 
@@ -26,5 +31,6 @@
 
 @media (max-width: 768px) {
   .header { flex-direction: column; align-items: flex-start; }
-  .filterSelect { width: 100%; }
+  .controls { width: 100%; flex-direction: column; }
+  .pdfButton, .filterSelect { width: 100%; }
 }
