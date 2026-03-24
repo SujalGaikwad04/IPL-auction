@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './TeamsOverviewPage.module.css';
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 function formatCr(v) { return '₹' + Number(v).toFixed(2) + ' Cr'; }
 
