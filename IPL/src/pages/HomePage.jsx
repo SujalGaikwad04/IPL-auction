@@ -43,7 +43,7 @@ export default function HomePage() {
     e.preventDefault();
     localStorage.removeItem('isAdmin'); // Clear admin if logging in as team
     localStorage.setItem('userTeam', selectedTeam);
-    nav('/team-view');
+    nav('/live');
   };
 
   return (

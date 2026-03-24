@@ -5,6 +5,7 @@ import TeamsOverviewPage from './pages/TeamsOverviewPage';
 import TeamUserPage from './pages/TeamUserPage';
 import AIEvalPage from './pages/AIEvalPage';
 import AllPlayersPage from './pages/AllPlayersPage';
+import RulesPage from './pages/RulesPage';
 import TopNav from './components/TopNav';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/teams" element={<TeamsOverviewPage />} />
         <Route path="/team-view" element={<TeamUserPage />} />
         <Route path="/players" element={<AllPlayersPage />} />
+        <Route path="/rules" element={<RulesPage />} />
         <Route path="/ai-eval" element={<AIEvalPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

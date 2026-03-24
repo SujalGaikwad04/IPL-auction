@@ -26,6 +26,7 @@ export default function TopNav() {
         <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#eab308', marginRight: '20px' }}>🏏 IPL Auction</div>
         <Link to="/live" style={{ color: loc.pathname === '/live' ? '#fff' : '#888', textDecoration: loc.pathname === '/live' ? 'underline' : 'none', fontWeight: 'bold' }}>🔴 Live Floor</Link>
         <Link to="/players" style={{ color: loc.pathname === '/players' ? '#fff' : '#888', textDecoration: loc.pathname === '/players' ? 'underline' : 'none', fontWeight: 'bold' }}>📋 Player Database</Link>
+        <Link to="/rules" style={{ color: loc.pathname === '/rules' ? '#fff' : '#888', textDecoration: loc.pathname === '/rules' ? 'underline' : 'none', fontWeight: 'bold' }}>📖 Rules</Link>
         
         {isAdmin && <Link to="/teams" style={{ color: loc.pathname === '/teams' ? '#fff' : '#888', textDecoration: loc.pathname === '/teams' ? 'underline' : 'none', fontWeight: 'bold' }}>Admin Overview</Link>}
         {isAdmin && <Link to="/ai-eval" style={{ color: loc.pathname === '/ai-eval' ? '#fff' : '#888', textDecoration: loc.pathname === '/ai-eval' ? 'underline' : 'none', fontWeight: 'bold' }}>AI Evaluation</Link>}

@@ -197,6 +197,9 @@ export default function LiveAuctionPage() {
             <strong>{isAdmin ? 'Admin Panel' : teams.find(t => t.code === userTeam)?.name || 'Viewer'}</strong><br />
             <small className={styles.mini}>Real-time auction dashboard</small>
           </div>
+          {!isAdmin && userTeam && (
+            <button className={styles.iconBtn} title="My Squad" onClick={() => nav('/team-view')}>📋</button>
+          )}
           <button className={styles.iconBtn} onClick={() => nav('/teams')}>👥</button>
           <button className={styles.iconBtn} onClick={() => nav('/ai-eval')}>🤖</button>
         </div>
