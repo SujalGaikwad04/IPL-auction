@@ -20,7 +20,7 @@ async function initializeDatabase() {
       `CREATE TABLE teams (
         code VARCHAR(10) PRIMARY KEY,
         name VARCHAR(100),
-        purse DECIMAL(10, 2) DEFAULT 100.00,
+        purse DECIMAL(10, 2) DEFAULT 110.00,
         players_bought INT DEFAULT 0,
         total_spent DECIMAL(10, 2) DEFAULT 0
       )`,
@@ -50,6 +50,7 @@ async function initializeDatabase() {
         player_id INT,
         name VARCHAR(100),
         role VARCHAR(50),
+        country VARCHAR(50) DEFAULT 'India',
         price DECIMAL(10, 2)
       )`,
 
@@ -102,7 +103,7 @@ async function initializeDatabase() {
     console.log('🌱 Initializing auction state...');
     await connection.execute(`
       INSERT INTO auction_state (id, status, timer_seconds)
-      VALUES (1, 'waiting', 160)
+      VALUES (1, 'waiting', 180)
     `);
 
     console.log('✅ Database Initialization Complete! You can now start the server.');

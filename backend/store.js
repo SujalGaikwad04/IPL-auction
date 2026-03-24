@@ -143,16 +143,16 @@ const players = [
 ];
 
 const teams = [
-  { id: 1, code: 'MI',   name: 'Mumbai Indians',            purse: 100.00, players_bought: 0, total_spent: 0 },
-  { id: 2, code: 'CSK',  name: 'Chennai Super Kings',       purse: 100.00, players_bought: 0, total_spent: 0 },
-  { id: 3, code: 'RCB',  name: 'Royal Challengers Bengaluru', purse: 100.00, players_bought: 0, total_spent: 0 },
-  { id: 4, code: 'KKR',  name: 'Kolkata Knight Riders',     purse: 100.00, players_bought: 0, total_spent: 0 },
-  { id: 5, code: 'DC',   name: 'Delhi Capitals',            purse: 100.00, players_bought: 0, total_spent: 0 },
-  { id: 6, code: 'RR',   name: 'Rajasthan Royals',          purse: 100.00, players_bought: 0, total_spent: 0 },
-  { id: 7, code: 'PBKS', name: 'Punjab Kings',              purse: 100.00, players_bought: 0, total_spent: 0 },
-  { id: 8, code: 'SRH',  name: 'Sunrisers Hyderabad',       purse: 100.00, players_bought: 0, total_spent: 0 },
-  { id: 9, code: 'GT',   name: 'Gujarat Titans',            purse: 100.00, players_bought: 0, total_spent: 0 },
-  { id:10, code: 'LSG',  name: 'Lucknow Super Giants',      purse: 100.00, players_bought: 0, total_spent: 0 },
+  { id: 1, code: 'MI',   name: 'Mumbai Indians',            purse: 110.00, players_bought: 0, total_spent: 0 },
+  { id: 2, code: 'CSK',  name: 'Chennai Super Kings',       purse: 110.00, players_bought: 0, total_spent: 0 },
+  { id: 3, code: 'RCB',  name: 'Royal Challengers Bengaluru', purse: 110.00, players_bought: 0, total_spent: 0 },
+  { id: 4, code: 'KKR',  name: 'Kolkata Knight Riders',     purse: 110.00, players_bought: 0, total_spent: 0 },
+  { id: 5, code: 'DC',   name: 'Delhi Capitals',            purse: 110.00, players_bought: 0, total_spent: 0 },
+  { id: 6, code: 'RR',   name: 'Rajasthan Royals',          purse: 110.00, players_bought: 0, total_spent: 0 },
+  { id: 7, code: 'PBKS', name: 'Punjab Kings',              purse: 110.00, players_bought: 0, total_spent: 0 },
+  { id: 8, code: 'SRH',  name: 'Sunrisers Hyderabad',       purse: 110.00, players_bought: 0, total_spent: 0 },
+  { id: 9, code: 'GT',   name: 'Gujarat Titans',            purse: 110.00, players_bought: 0, total_spent: 0 },
+  { id:10, code: 'LSG',  name: 'Lucknow Super Giants',      purse: 110.00, players_bought: 0, total_spent: 0 },
 ];
 
 const auction = {

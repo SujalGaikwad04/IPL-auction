@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './AllPlayersPage.module.css';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import PlayerPhoto from '../components/PlayerPhoto';
 
 const API_BASE = 'http://localhost:3001/api';
 
@@ -139,7 +140,12 @@ export default function AllPlayersPage() {
               {filtered.map(p => (
                 <tr key={p.id}>
                   <td className={styles.idCell}>#{p.id}</td>
-                  <td className={styles.nameCell}>{p.name}</td>
+                  <td className={styles.nameCell}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <PlayerPhoto player={p} size="sm" animate={false} />
+                      <span>{p.name}</span>
+                    </div>
+                  </td>
                   <td><span className={styles.rolePill}>{p.role}</span></td>
                   <td>{p.country}</td>
                   <td className={styles.priceCell}>{formatCr(p.base_price)}</td>

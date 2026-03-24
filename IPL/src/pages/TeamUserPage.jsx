@@ -101,7 +101,7 @@ export default function TeamUserPage() {
       <section className={`${styles.section} fade-up`} style={{ animationDelay: '.1s' }}>
         <div className={styles.sectionHead}>
           <h2>Your Current Squad</h2>
-          <span className={styles.sectionChip}>{team.players_bought} / 25 Maximum</span>
+          <span className={styles.sectionChip}>{team.players_bought} / 13 Maximum</span>
         </div>
         
         {squad.length === 0 ? (

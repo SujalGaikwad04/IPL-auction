@@ -41,7 +41,7 @@
 .sectionTitle h2 { margin: 0; font-size: 1.02rem; }
 .chip { padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,.05); font-size: .8rem; color: var(--muted); border: 1px solid var(--line); }
 
-.playerTop { display: grid; grid-template-columns: 160px 1fr; gap: 18px; align-items: center; }
+.playerTop { display: grid; grid-template-columns: 190px 1fr; gap: 20px; align-items: flex-start; }
 .playerImage {
   width: 100%; aspect-ratio: 4/4.5; border-radius: 20px;
   background: linear-gradient(160deg, #162649, #091225); border: 1px solid rgba(255,255,255,.08);
