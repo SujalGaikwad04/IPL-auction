@@ -1,0 +1,142 @@
+.nav {
+  background: linear-gradient(135deg, rgba(20,30,55,0.85), rgba(10,15,35,0.9));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 15px 30px;
+  border-bottom: 1px solid rgba(59,130,246,0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.leftContainer {
+  display: flex;
+  gap: 25px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.brand {
+  font-size: 22px;
+  font-weight: 800;
+  color: #eab308;
+  margin-right: 20px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+
+.navLink {
+  color: #888;
+  text-decoration: none;
+  font-weight: 700;
+  transition: color 0.2s, transform 0.2s;
+  white-space: nowrap;
+  font-size: 0.95rem;
+}
+
+.navLink:hover {
+  color: #fff;
+}
+
+.navLinkActive {
+  color: #fff;
+  border-bottom: 2px solid #ab8cff;
+  padding-bottom: 2px;
+}
+
+.rightContainer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.statusBadge {
+  color: #d8e1ff;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.05);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.logoutBtn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 15px rgba(239,68,68,0.3);
+  font-size: 0.9rem;
+}
+
+.logoutBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239,68,68,0.4);
+}
+
+@media (max-width: 1024px) {
+  .leftContainer {
+    gap: 15px;
+  }
+}
+
+@media (max-width: 860px) {
+  .nav {
+    flex-direction: column;
+    padding: 14px 20px;
+    gap: 12px;
+  }
+  .leftContainer {
+    justify-content: center;
+    width: 100%;
+  }
+  .rightContainer {
+    justify-content: center;
+    width: 100%;
+  }
+  .brand {
+    margin-right: 10px;
+  }
+}
+
+@media (max-width: 560px) {
+  .nav {
+    padding: 12px 10px;
+  }
+  .leftContainer {
+    gap: 10px;
+  }
+  .brand {
+    font-size: 18px;
+    margin-right: 0;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+  .navLink {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+  }
+  .statusBadge {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+  }
+  .logoutBtn {
+    padding: 6px 16px;
+    font-size: 0.85rem;
+  }
+}
