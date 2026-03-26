@@ -60,5 +60,23 @@
 .price { justify-self: end; font-weight: 800; color: #dff8ff; }
 
 @media (max-width:1200px) { .teamsGrid { grid-template-columns: repeat(3,1fr); } .summaryGrid { grid-template-columns: repeat(2,1fr); } }
-@media (max-width:860px) { .header { flex-direction: column; align-items: stretch; } .headerCenter, .status { text-align: left; justify-content: flex-start; } .teamsGrid { grid-template-columns: repeat(2,1fr); } .modalSummary { grid-template-columns: 1fr; } }
-@media (max-width:560px) { .app { padding: 14px; } .summaryGrid, .teamsGrid { grid-template-columns: 1fr; } .squadItem { grid-template-columns: 1fr; } .price { justify-self: start; } }
+@media (max-width:860px) {
+  .header { flex-direction: row; padding: 12px 14px; margin-top: 4px; border-radius: 18px; margin-bottom: 16px; align-items: center; justify-content: space-between; gap: 8px; }
+  .brand p { display: none; }
+  .logo { width: 38px; height: 38px; font-size: 18px; }
+  .brand h1 { font-size: 1rem; }
+  .headerCenter { display: none; }
+  .status > div { display: none; }
+  .iconBtn { width: 36px; height: 36px; font-size: 1rem; }
+  .teamsGrid { grid-template-columns: repeat(2,1fr); }
+  .modalSummary { grid-template-columns: 1fr; }
+}
+@media (max-width:560px) {
+  .app { padding: 10px; }
+  .summaryGrid, .teamsGrid { grid-template-columns: 1fr; }
+  .squadItem { grid-template-columns: auto 1fr; gap: 8px; padding: 14px; }
+  .rolePill { grid-column: 1 / -1; margin-top: 4px; }
+  .price { justify-self: start; }
+  .teamTop { flex-direction: column; text-align: center; }
+  .teamLogo { margin: 0 auto; }
+}
