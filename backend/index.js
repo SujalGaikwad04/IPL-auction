@@ -143,6 +143,139 @@ app.get('/api/players', async (req, res) => {
   }
 });
 
+// ─── API: PLAYER QUEUE ──────────────────────────────────────────────────────
+
+// GET full queue with player details
+app.get('/api/queue', async (req, res) => {
+  try {
+    const { rows } = await query(
+      `SELECT pq.id as queue_id, pq.position, p.*
+       FROM player_queue pq
+       JOIN players p ON p.id = pq.player_id
+       ORDER BY pq.position ASC`
+    );
+    const queue = rows.map(r => ({
+      ...r,
+      base_price: parseFloat(r.base_price),
+      stat3: parseFloat(r.stat3)
+    }));
+    res.json({ queue });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST add a player to the queue
+app.post('/api/queue/add', async (req, res) => {
+  const { player_id } = req.body;
+  if (!player_id) return res.status(400).json({ error: 'player_id required' });
+  try {
+    // Check player exists and is pending
+    const { rows: pRows } = await query(`SELECT * FROM players WHERE id=?`, [player_id]);
+    const player = pRows[0];
+    if (!player) return res.status(404).json({ error: 'Player not found' });
+    if (player.status !== 'pending') return res.status(400).json({ error: `Player is already ${player.status}` });
+
+    // Check not already in queue
+    const { rows: existing } = await query(`SELECT id FROM player_queue WHERE player_id=?`, [player_id]);
+    if (existing.length > 0) return res.status(400).json({ error: 'Player already in queue' });
+
+    // Get next position
+    const { rows: posRows } = await query(`SELECT COALESCE(MAX(position), 0) + 1 as next_pos FROM player_queue`);
+    const nextPos = posRows[0].next_pos;
+
+    await query(`INSERT INTO player_queue (player_id, position) VALUES (?, ?)`, [player_id, nextPos]);
+    res.json({ success: true, message: `${player.name} added to queue at position ${nextPos}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE remove a player from the queue
+app.delete('/api/queue/:queueId', async (req, res) => {
+  const { queueId } = req.params;
+  try {
+    await query(`DELETE FROM player_queue WHERE id=?`, [queueId]);
+    // Re-number positions
+    const { rows: remaining } = await query(`SELECT id FROM player_queue ORDER BY position ASC`);
+    for (let i = 0; i < remaining.length; i++) {
+      await query(`UPDATE player_queue SET position=? WHERE id=?`, [i + 1, remaining[i].id]);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST promote first queue player to live auction (or a specific one)
+app.post('/api/queue/promote', async (req, res) => {
+  const { queue_id } = req.body;
+  try {
+    let queueEntry;
+    if (queue_id) {
+      const { rows } = await query(`SELECT * FROM player_queue WHERE id=?`, [queue_id]);
+      queueEntry = rows[0];
+    } else {
+      const { rows } = await query(`SELECT * FROM player_queue ORDER BY position ASC LIMIT 1`);
+      queueEntry = rows[0];
+    }
+    if (!queueEntry) return res.status(404).json({ error: 'No player in queue' });
+
+    const { rows: pRows } = await query(`SELECT * FROM players WHERE id=?`, [queueEntry.player_id]);
+    const player = pRows[0];
+    if (!player) return res.status(404).json({ error: 'Player not found' });
+
+    // Start auction for this player
+    await query(`
+      UPDATE auction_state SET
+        status = 'active',
+        current_player_id = ?,
+        current_bid = ?,
+        leading_team_code = '—',
+        leading_team_name = '',
+        bid_count = 0,
+        timer_seconds = ?
+      WHERE id = 1
+    `, [player.id, player.base_price, MAX_TIME]);
+
+    // Remove from queue
+    await query(`DELETE FROM player_queue WHERE id=?`, [queueEntry.id]);
+    // Re-number
+    const { rows: remaining } = await query(`SELECT id FROM player_queue ORDER BY position ASC`);
+    for (let i = 0; i < remaining.length; i++) {
+      await query(`UPDATE player_queue SET position=? WHERE id=?`, [i + 1, remaining[i].id]);
+    }
+
+    await logHistory('SYS', `Started auction for ${player.name} (from queue)`, player.base_price, 'just now');
+    res.json({ success: true, player });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST move queue item up or down
+app.post('/api/queue/reorder', async (req, res) => {
+  const { queue_id, direction } = req.body; // direction: 'up' | 'down'
+  try {
+    const { rows: all } = await query(`SELECT * FROM player_queue ORDER BY position ASC`);
+    const idx = all.findIndex(q => q.id == queue_id);
+    if (idx === -1) return res.status(404).json({ error: 'Queue entry not found' });
+
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= all.length) return res.json({ success: true, message: 'Already at edge' });
+
+    // Swap positions
+    const posA = all[idx].position;
+    const posB = all[swapIdx].position;
+    await query(`UPDATE player_queue SET position=? WHERE id=?`, [posB, all[idx].id]);
+    await query(`UPDATE player_queue SET position=? WHERE id=?`, [posA, all[swapIdx].id]);
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── API: AUCTION STATE ─────────────────────────────────────────────────────
 
 app.get('/api/auction', async (req, res) => {
@@ -340,6 +473,9 @@ app.post('/api/auction/sold', async (req, res) => {
       [team.code, player.id, player.name, player.role, player.country, auction.current_bid]);
     await query(`UPDATE auction_state SET status='sold' WHERE id=1`);
 
+    // Remove from queue if present
+    await query(`DELETE FROM player_queue WHERE player_id=?`, [player.id]);
+
     await logHistory(team.code, `Sold to ${team.name}`, auction.current_bid, 'just now');
 
     res.json({ success: true, team, player });
@@ -356,6 +492,8 @@ app.post('/api/auction/unsold', async (req, res) => {
 
     if (auction.current_player_id) {
       await query(`UPDATE players SET status='unsold' WHERE id=$1`, [auction.current_player_id]);
+      // Remove from queue if present
+      await query(`DELETE FROM player_queue WHERE player_id=?`, [auction.current_player_id]);
     }
 
     await query(`UPDATE auction_state SET status='unsold' WHERE id=1`);
@@ -372,6 +510,44 @@ app.post('/api/auction/end', async (req, res) => {
     await query(`UPDATE auction_state SET status='ended' WHERE id=1`);
     await logHistory('SYS', 'Auction closed completely by Admin', 0, 'just now');
     res.json({ success: true });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Admin: Full Reset (for testing) ────────────────────────────────────────
+app.post('/api/auction/reset', async (req, res) => {
+  try {
+    // 1. Reset all players back to pending
+    await query(`UPDATE players SET status='pending', sold_to=NULL, sold_price=NULL`);
+
+    // 2. Clear all squads
+    await query(`DELETE FROM squads`);
+
+    // 3. Clear bid history
+    await query(`DELETE FROM bids`);
+
+    // 4. Clear player queue
+    await query(`DELETE FROM player_queue`);
+
+    // 5. Reset team purses, spent and bought counts
+    await query(`UPDATE teams SET purse=110.00, total_spent=0.00, players_bought=0`);
+
+    // 6. Reset auction state
+    await query(`
+      UPDATE auction_state SET
+        status='waiting',
+        current_player_id=NULL,
+        current_bid=0,
+        leading_team_code='—',
+        leading_team_name='',
+        bid_count=0,
+        timer_seconds=180
+      WHERE id=1
+    `);
+
+    console.log('🔄 Auction fully reset by Admin');
+    res.json({ success: true, message: 'Auction has been fully reset.' });
   } catch(err) {
     res.status(500).json({ error: err.message });
   }
@@ -396,6 +572,18 @@ async function runMigrations() {
     // 3) Update timer_seconds in auction_state from 160 to 180 if it's at old value
     await query(`UPDATE auction_state SET timer_seconds = 180 WHERE timer_seconds = 160 AND status = 'waiting'`);
     console.log('✅ Migration: Timer updated to 180 seconds (if applicable)');
+
+    // 4) Create player_queue table if it doesn't exist
+    await query(`
+      CREATE TABLE IF NOT EXISTS player_queue (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        player_id INT NOT NULL,
+        position INT NOT NULL DEFAULT 0,
+        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_player (player_id)
+      )
+    `);
+    console.log('✅ Migration: player_queue table ready');
 
   } catch (err) {
     console.error('Migration error:', err.message);

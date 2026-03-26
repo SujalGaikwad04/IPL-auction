@@ -55,6 +55,13 @@ function canTeamBid(team, squad, player, currentBid) {
   return { allowed: true, reason: null };
 }
 
+const ROLE_COLORS = {
+  'Batsman': '#43b4ff',
+  'Bowler': '#f87171',
+  'All-rounder': '#34d399',
+  'Wicketkeeper': '#fbbf24',
+};
+
 export default function LiveAuctionPage() {
   const nav = useNavigate();
 
@@ -67,6 +74,13 @@ export default function LiveAuctionPage() {
   const [soldBanner, setSoldBanner] = useState(null);
   const [modal, setModal] = useState(null);
   const [screenLocked, setScreenLocked] = useState(false);
+
+  // Queue state
+  const [queue, setQueue] = useState([]);
+  const [allPlayers, setAllPlayers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchRole, setSearchRole] = useState('');
+  const [queueLoading, setQueueLoading] = useState(false);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -95,11 +109,28 @@ export default function LiveAuctionPage() {
     }
   }, []);
 
+  const fetchQueue = useCallback(async () => {
+    try {
+      const [qRes, pRes] = await Promise.all([
+        fetch(`${API_BASE}/queue`).then(r => r.json()),
+        fetch(`${API_BASE}/players`).then(r => r.json()),
+      ]);
+      setQueue(qRes.queue || []);
+      setAllPlayers(Array.isArray(pRes) ? pRes : []);
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
   useEffect(() => {
     fetchState();
-    const interval = setInterval(fetchState, 1500);
+    fetchQueue();
+    const interval = setInterval(() => {
+      fetchState();
+      fetchQueue();
+    }, 1500);
     return () => clearInterval(interval);
-  }, [fetchState]);
+  }, [fetchState, fetchQueue]);
 
   const placeBid = async (code) => {
     if (auction?.status !== 'active') return showToast('Bidding is closed.');
@@ -138,32 +169,66 @@ export default function LiveAuctionPage() {
     } catch (e) { console.error(e); }
   };
 
-  const nextPlayer = async () => {
-    setSoldBanner(null);
-    try {
-      const res = await fetch(`${API_BASE}/players`);
-      const allPlayers = await res.json();
-      const pending = allPlayers.filter(p => p.status === 'pending');
-      if (pending.length === 0) return showToast('No more pending players!');
-
-      const currentIdx = pending.findIndex(p => p.id === player?.id);
-      const nextP = currentIdx >= 0 && currentIdx + 1 < pending.length
-        ? pending[currentIdx + 1]
-        : pending[0];
-
-      await fetch(`${API_BASE}/auction/start`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ player_id: nextP.id })
-      });
-      fetchState();
-    } catch (e) { console.error(e); }
-  };
 
   const endAuction = async () => {
     try {
       await fetch(`${API_BASE}/auction/end`, { method: 'POST' });
       fetchState();
     } catch(e) { console.error(e); }
+  };
+
+  const resetAuction = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/auction/reset`, { method: 'POST' });
+      const data = await res.json();
+      if (data.error) showToast('❌ ' + data.error);
+      else { showToast('🔄 Auction fully reset!'); setSoldBanner(null); fetchState(); fetchQueue(); }
+    } catch(e) { console.error(e); }
+  };
+
+  // ── Queue Actions ──────────────────────────────────────────────────────────
+  const addToQueue = async (playerId) => {
+    setQueueLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/queue/add`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ player_id: playerId })
+      });
+      const data = await res.json();
+      if (data.error) showToast('❌ ' + data.error);
+      else { showToast('✅ ' + data.message); fetchQueue(); }
+    } catch (e) { console.error(e); }
+    setQueueLoading(false);
+  };
+
+  const removeFromQueue = async (queueId) => {
+    try {
+      await fetch(`${API_BASE}/queue/${queueId}`, { method: 'DELETE' });
+      fetchQueue();
+    } catch (e) { console.error(e); }
+  };
+
+  const reorderQueue = async (queueId, direction) => {
+    try {
+      await fetch(`${API_BASE}/queue/reorder`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ queue_id: queueId, direction })
+      });
+      fetchQueue();
+    } catch (e) { console.error(e); }
+  };
+
+  const promoteFromQueue = async (queueId) => {
+    setSoldBanner(null);
+    try {
+      const res = await fetch(`${API_BASE}/queue/promote`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ queue_id: queueId })
+      });
+      const data = await res.json();
+      if (data.error) showToast('❌ ' + data.error);
+      else { showToast(`🚀 ${data.player.name} is now on the auction block!`); fetchState(); fetchQueue(); }
+    } catch (e) { console.error(e); }
   };
 
   const openModal = (title, msg, cb) => setModal({ title, msg, cb });
@@ -178,6 +243,20 @@ export default function LiveAuctionPage() {
 
   const isAdmin = localStorage.getItem('isAdmin') === 'true';
   const userTeam = localStorage.getItem('userTeam');
+
+  // ── Search Filtering ──────────────────────────────────────────────────────
+  const queuePlayerIds = new Set(queue.map(q => q.id));
+  const currentPlayerId = player?.id;
+
+  const filteredPlayers = allPlayers.filter(p => {
+    if (p.status !== 'pending') return false;
+    if (p.id === currentPlayerId) return false;
+    if (queuePlayerIds.has(p.id)) return false;
+    const q = searchQuery.toLowerCase();
+    const matchName = p.name.toLowerCase().includes(q);
+    const matchRole = !searchRole || p.role === searchRole;
+    return matchName && matchRole;
+  });
 
   return (
     <div className={styles.app}>
@@ -234,7 +313,7 @@ export default function LiveAuctionPage() {
           ) : (
             <div style={{color: '#666', padding: '40px', textAlign: 'center'}}>
               <div style={{fontSize:'3rem', marginBottom:'12px'}}>🏏</div>
-              <div>No active player. Admin — click Next Player to start.</div>
+              <div>No active player. Admin — click Next Player or promote from queue.</div>
             </div>
           )}
         </article>
@@ -354,9 +433,10 @@ export default function LiveAuctionPage() {
           })}
       </section>
 
-      {/* Admin Controls */}
+      {/* Admin Controls + Player Queue */}
       {isAdmin && (
         <section className={styles.lowerGrid}>
+          {/* Admin Controls */}
           <article className={styles.card}>
             <div className={styles.sectionTitle}><h2>Admin Controls</h2><span className={styles.chip}>Visible only for admin</span></div>
             <div className={styles.adminControls}>
@@ -368,17 +448,127 @@ export default function LiveAuctionPage() {
                 onClick={() => openModal('Mark as Unsold?', 'Confirm UNSOLD for the current player?', markUnsold)}>
                 ❌ Mark as Unsold
               </button>
-              <button className={`${styles.action} ${styles.blue}`}
-                onClick={() => openModal('Load next player?', 'Move to the next pending player?', nextPlayer)}>
-                ⏭ Next Player
-              </button>
               <button className={`${styles.action} ${styles.red}`}
                 onClick={() => openModal('End Auction?', 'This will stop the auction permanently.', endAuction)}>
                 🛑 End Auction
               </button>
+              <button className={`${styles.action} ${styles.orange}`}
+                onClick={() => openModal('Reset Auction?', '⚠️ This will reset ALL players, squads, bids, queue and purses back to start. Use only for testing!', resetAuction)}>
+                🔄 Reset Auction
+              </button>
             </div>
             <div className={styles.footerNote}>
               Rules enforced: ₹110 Cr budget · ₹0.15 Cr increment · 3-min timer · 13 players · 4 overseas · role caps
+            </div>
+          </article>
+
+          {/* Player Queue Panel */}
+          <article className={styles.card} style={{gridColumn: 'span 1'}}>
+            <div className={styles.sectionTitle}>
+              <h2>🎯 Player Queue</h2>
+              <span className={styles.chip}>{queue.length} in queue</span>
+            </div>
+
+            {/* Queue List */}
+            <div className={styles.queueList}>
+              {queue.length === 0 && (
+                <div className={styles.queueEmpty}>
+                  <div style={{fontSize:'2rem', marginBottom:'8px'}}>📋</div>
+                  <div>Queue is empty. Search and add players below.</div>
+                </div>
+              )}
+              {queue.map((qp, idx) => (
+                <div key={qp.queue_id} className={styles.queueItem}>
+                  <div className={styles.queuePos}>#{idx + 1}</div>
+                  <div className={styles.queueInfo}>
+                    <div className={styles.queueName}>{qp.name}</div>
+                    <div style={{display:'flex', gap:'6px', flexWrap:'wrap', marginTop:'3px'}}>
+                      <span className={styles.queueTag} style={{color: ROLE_COLORS[qp.role] || '#ccc'}}>{qp.role}</span>
+                      <span className={styles.queueTag}>🌍 {qp.country}</span>
+                      <span className={styles.queueTag}>{formatCr(qp.base_price)}</span>
+                    </div>
+                  </div>
+                  <div className={styles.queueActions}>
+                    <button
+                      className={`${styles.qBtn} ${styles.qGreen}`}
+                      onClick={() => openModal(`Start "${qp.name}"?`, 'This will immediately start bidding for this player.', () => promoteFromQueue(qp.queue_id))}
+                      title="Start Bidding Now"
+                    >🚀</button>
+                    <button
+                      className={`${styles.qBtn} ${styles.qGray}`}
+                      onClick={() => reorderQueue(qp.queue_id, 'up')}
+                      disabled={idx === 0}
+                      title="Move Up"
+                    >▲</button>
+                    <button
+                      className={`${styles.qBtn} ${styles.qGray}`}
+                      onClick={() => reorderQueue(qp.queue_id, 'down')}
+                      disabled={idx === queue.length - 1}
+                      title="Move Down"
+                    >▼</button>
+                    <button
+                      className={`${styles.qBtn} ${styles.qRed}`}
+                      onClick={() => removeFromQueue(qp.queue_id)}
+                      title="Remove from Queue"
+                    >✕</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Search Section */}
+            <div className={styles.queueSearchSection}>
+              <div className={styles.sectionTitle} style={{marginBottom:'10px'}}>
+                <h2 style={{fontSize:'0.92rem'}}>🔍 Add Players to Queue</h2>
+              </div>
+              <div className={styles.searchBar}>
+                <input
+                  className={styles.searchInput}
+                  placeholder="Search by player name..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                />
+                <select
+                  className={styles.roleFilter}
+                  value={searchRole}
+                  onChange={e => setSearchRole(e.target.value)}
+                >
+                  <option value="">All Roles</option>
+                  <option value="Batsman">Batsman</option>
+                  <option value="Bowler">Bowler</option>
+                  <option value="All-rounder">All-rounder</option>
+                  <option value="Wicketkeeper">Wicketkeeper</option>
+                </select>
+              </div>
+
+              <div className={styles.searchResults}>
+                {searchQuery.length === 0 && searchRole === '' && (
+                  <div className={styles.searchHint}>Type a name or select a role to find players</div>
+                )}
+                {(searchQuery.length > 0 || searchRole !== '') && filteredPlayers.length === 0 && (
+                  <div className={styles.searchHint}>No pending players match your search</div>
+                )}
+                {(searchQuery.length > 0 || searchRole !== '') && filteredPlayers.slice(0, 8).map(p => (
+                  <div key={p.id} className={styles.searchItem}>
+                    <div className={styles.searchInfo}>
+                      <div className={styles.searchName}>{p.name}</div>
+                      <div style={{display:'flex', gap:'5px', flexWrap:'wrap', marginTop:'3px'}}>
+                        <span className={styles.queueTag} style={{color: ROLE_COLORS[p.role] || '#ccc'}}>{p.role}</span>
+                        <span className={styles.queueTag}>🌍 {p.country}</span>
+                        <span className={styles.queueTag}>{formatCr(p.base_price)}</span>
+                      </div>
+                    </div>
+                    <button
+                      className={`${styles.addBtn}`}
+                      disabled={queueLoading}
+                      onClick={() => addToQueue(p.id)}
+                    >+ Queue</button>
+                  </div>
+                ))}
+                {(searchQuery.length > 0 || searchRole !== '') && filteredPlayers.length > 8 && (
+                  <div className={styles.searchHint}>Showing 8 of {filteredPlayers.length} results. Refine your search.</div>
+                )}
+              </div>
             </div>
           </article>
         </section>

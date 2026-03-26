@@ -96,7 +96,7 @@
 .leading { border-color: rgba(138,92,255,.35) !important; box-shadow: var(--shadow), 0 0 28px rgba(138,92,255,.18) !important; }
 .leading::before { content: "Leading"; position: absolute; top: 10px; right: 10px; font-size: .68rem; font-weight: 700; color: #f0e7ff; padding: 5px 8px; border-radius: 999px; background: rgba(138,92,255,.18); border: 1px solid rgba(138,92,255,.22); }
 
-.lowerGrid { display: grid; grid-template-columns: 1.4fr .8fr; gap: 18px; }
+.lowerGrid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 18px; }
 .purseGrid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; }
 .purseCard { padding: 14px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
 .purseCard h4 { margin: 0 0 8px; font-size: .92rem; }
@@ -147,3 +147,100 @@
   .playerStats, .teamsGrid, .purseGrid, .adminControls, .miniGrid { grid-template-columns: 1fr; }
   .modalActions { display: grid; }
 }
+
+/* ─── Player Queue Styles ─────────────────────────────────────────────────── */
+
+.queueList {
+  display: flex; flex-direction: column; gap: 8px;
+  max-height: 260px; overflow-y: auto; margin-bottom: 14px;
+  padding-right: 4px;
+}
+
+.queueEmpty {
+  text-align: center; padding: 24px; color: var(--muted);
+  background: rgba(255,255,255,.03); border-radius: 14px;
+  border: 1px dashed rgba(255,255,255,.1);
+}
+
+.queueItem {
+  display: grid; grid-template-columns: 32px 1fr auto;
+  gap: 10px; align-items: center;
+  padding: 10px 12px; border-radius: 14px;
+  background: linear-gradient(135deg, rgba(67,180,255,.08), rgba(138,92,255,.07));
+  border: 1px solid rgba(138,92,255,.18);
+  transition: border-color .2s;
+}
+.queueItem:hover { border-color: rgba(138,92,255,.35); }
+
+.queuePos {
+  font-size: .78rem; font-weight: 800; color: #8a92d0;
+  text-align: center;
+}
+
+.queueInfo { overflow: hidden; }
+.queueName { font-size: .9rem; font-weight: 700; color: #e8eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.queueTag { font-size: .75rem; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); color: #b0b8d8; }
+
+.queueActions { display: flex; gap: 5px; align-items: center; }
+
+.qBtn {
+  width: 28px; height: 28px; border-radius: 8px; border: none;
+  display: grid; place-items: center; cursor: pointer; font-size: .78rem;
+  font-weight: 800; transition: filter .15s, transform .15s;
+}
+.qBtn:hover:not(:disabled) { filter: brightness(1.15); transform: translateY(-1px); }
+.qBtn:disabled { opacity: .3; cursor: not-allowed; }
+.qGreen { background: rgba(52,211,153,.18); color: #6dffc7; border: 1px solid rgba(52,211,153,.25); }
+.qGray { background: rgba(255,255,255,.08); color: #a5b3d8; border: 1px solid rgba(255,255,255,.1); }
+.qRed { background: rgba(239,68,68,.15); color: #fca5a5; border: 1px solid rgba(239,68,68,.2); }
+
+/* Queue Search */
+.queueSearchSection {
+  border-top: 1px solid rgba(255,255,255,.07); padding-top: 14px;
+}
+
+.searchBar { display: flex; gap: 8px; margin-bottom: 10px; }
+
+.searchInput {
+  flex: 1; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px; padding: 9px 13px; color: #e8f0ff; font-size: .88rem;
+  outline: none; transition: border-color .2s;
+}
+.searchInput:focus { border-color: rgba(67,180,255,.5); }
+.searchInput::placeholder { color: #4a5580; }
+
+.roleFilter {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px; padding: 9px 11px; color: #e8f0ff; font-size: .84rem;
+  outline: none; cursor: pointer;
+}
+.roleFilter option { background: #0d1a38; color: #e0e8ff; }
+
+.searchResults {
+  display: flex; flex-direction: column; gap: 7px;
+  max-height: 240px; overflow-y: auto; padding-right: 4px;
+}
+
+.searchHint { text-align: center; color: #4a5580; font-size: .84rem; padding: 14px 0; }
+
+.searchItem {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 12px;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  transition: border-color .2s;
+}
+.searchItem:hover { border-color: rgba(67,180,255,.3); background: rgba(67,180,255,.06); }
+
+.searchInfo { flex: 1; overflow: hidden; }
+.searchName { font-size: .88rem; font-weight: 700; color: #dde5ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.addBtn {
+  padding: 7px 12px; border-radius: 10px; border: none;
+  background: linear-gradient(135deg, rgba(67,180,255,.22), rgba(138,92,255,.22));
+  color: #b8d8ff; font-weight: 700; font-size: .8rem;
+  cursor: pointer; white-space: nowrap;
+  border: 1px solid rgba(67,180,255,.3);
+  transition: filter .15s, transform .15s;
+}
+.addBtn:hover:not(:disabled) { filter: brightness(1.18); transform: translateY(-1px); }
+.addBtn:disabled { opacity: .4; cursor: not-allowed; }
