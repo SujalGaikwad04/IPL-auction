@@ -11,7 +11,7 @@ const RULES = [
     points: [
       '10 IPL teams participate in the auction',
       'All teams start with equal budget and no players',
-      'Every team must submit a final squad of 11–13 players',
+      'Every team must submit a final squad of 11–15 players',
     ],
     extra: null,
   },
@@ -33,11 +33,11 @@ const RULES = [
     icon: '🎯',
     title: 'Squad Size',
     color: '#10b981',
-    summary: '11 Min · 13 Max Players',
+    summary: '11 Min · 15 Max Players',
     points: [
-      'Each team must buy a minimum of 11 players',
-      'Maximum squad size is 13 players per team',
-      'Remaining 2 slots (beyond 11) act as substitutes or backup',
+      'The maximum squad must be of 15 players',
+      'The minimum squad must be of 11 players',
+      'Remaining slots (beyond 11) act as substitutes or backup',
     ],
     extra: {
       type: 'highlight',
@@ -50,36 +50,35 @@ const RULES = [
     icon: '🌐',
     title: 'Foreign Player Rule',
     color: '#f59e0b',
-    summary: 'Max 4 Foreign Players / Team',
+    summary: 'Exactly 4 Foreign Players',
     points: [
-      'Each team can have at most 4 overseas (foreign) players',
-      'Remaining 9+ players must be Indian nationals',
+      'Each squad MUST have exactly 4 overseas (foreign) players in their final squad',
+      'Remaining players must be Indian nationals',
       'A bid on a foreign player will be blocked if the team already has 4',
     ],
     extra: {
       type: 'example',
       label: 'Example Squad Breakdown',
-      items: ['🇮🇳 9 Indian Players', '🌐 4 Foreign Players', '= 13 Total'],
+      items: ['🇮🇳 11 Indian Players', '🌐 4 Foreign Players', '= 15 Total'],
     },
   },
   {
     number: '05',
     icon: '⚡',
-    title: 'Role Limits',
+    title: 'Role Minimums',
     color: '#ef4444',
-    summary: 'Balanced Composition Required',
+    summary: 'Minimum Role Requirements',
     points: [
-      'Each team must follow strict role quotas',
-      'A bid will be rejected if the role limit is already reached',
-      'Roles are enforced at both bid and sale confirmation stage',
+      'Each squad must have a minimum of 4 Bowlers and 1 Wicketkeeper.',
+      'Flexible role maximums allow teams to build a squad up to 15 players.',
     ],
     extra: {
       type: 'roles',
       roles: [
-        { icon: '🏏', label: 'Batsmen', max: 4, color: '#3b82f6' },
-        { icon: '🎯', label: 'Bowlers', max: 4, color: '#ef4444' },
-        { icon: '⚡', label: 'All-rounders', max: 3, color: '#10b981' },
-        { icon: '🧤', label: 'Wicketkeepers', max: 2, color: '#f59e0b' },
+        { icon: '🏏', label: 'Batsmen', desc: 'Max 6', color: '#3b82f6' },
+        { icon: '🎯', label: 'Bowlers', desc: 'Min 4, Max 7', color: '#ef4444' },
+        { icon: '⚡', label: 'All-rounders', desc: 'Max 4', color: '#10b981' },
+        { icon: '🧤', label: 'Wicketkeepers', desc: 'Min 1, Max 3', color: '#f59e0b' },
       ],
     },
   },
@@ -201,7 +200,7 @@ const QUICK_REFS = [
   { label: 'Players', value: '130', icon: '👥', color: '#8b5cf6' },
   { label: 'Budget', value: '₹110 Cr', icon: '💰', color: '#06b6d4' },
   { label: 'Increment', value: '₹0.15 Cr', icon: '📈', color: '#84cc16' },
-  { label: 'Squad Max', value: '13', icon: '🎯', color: '#10b981' },
+  { label: 'Squad Max', value: '15', icon: '🎯', color: '#10b981' },
   { label: 'Foreign Max', value: '4', icon: '🌐', color: '#f59e0b' },
   { label: 'Timer', value: '3 min', icon: '⏱️', color: '#f97316' },
   { label: 'Playing XI', value: '11', icon: '⚡', color: '#ef4444' },
@@ -280,7 +279,7 @@ export default function RulesPage() {
                     <div key={i} className={styles.roleBox} style={{ borderColor: r.color }}>
                       <span className={styles.roleIcon}>{r.icon}</span>
                       <span className={styles.roleLabel}>{r.label}</span>
-                      <span className={styles.roleMax} style={{ color: r.color }}>Max {r.max}</span>
+                      <span className={styles.roleMax} style={{ color: r.color }}>{r.desc || `Max ${r.max}`}</span>
                     </div>
                   ))}
                 </div>
@@ -316,16 +315,16 @@ export default function RulesPage() {
           <p className={styles.infoSub}>The ideal squad structure following all role limits</p>
           <div className={styles.squadViz}>
             <div className={styles.squadRow}>
-              {[...Array(4)].map((_, i) => (
+              {[...Array(5)].map((_, i) => (
                 <div key={i} className={styles.squadDot} style={{ background: '#3b82f6' }} title="Batsman">🏏</div>
               ))}
-              <span className={styles.squadRoleLabel} style={{ color: '#3b82f6' }}>4 Batsmen</span>
+              <span className={styles.squadRoleLabel} style={{ color: '#3b82f6' }}>5 Batsmen</span>
             </div>
             <div className={styles.squadRow}>
-              {[...Array(4)].map((_, i) => (
+              {[...Array(5)].map((_, i) => (
                 <div key={i} className={styles.squadDot} style={{ background: '#ef4444' }} title="Bowler">🎯</div>
               ))}
-              <span className={styles.squadRoleLabel} style={{ color: '#ef4444' }}>4 Bowlers</span>
+              <span className={styles.squadRoleLabel} style={{ color: '#ef4444' }}>5 Bowlers</span>
             </div>
             <div className={styles.squadRow}>
               {[...Array(3)].map((_, i) => (
@@ -340,8 +339,8 @@ export default function RulesPage() {
               <span className={styles.squadRoleLabel} style={{ color: '#f59e0b' }}>2 Wicketkeepers</span>
             </div>
             <div className={styles.squadTotal}>
-              <strong>Total = 13 Players</strong>
-              <span>(9 Indian + 4 Overseas)</span>
+              <strong>Total = 15 Players</strong>
+              <span>(11 Indian + 4 Overseas)</span>
             </div>
           </div>
         </div>

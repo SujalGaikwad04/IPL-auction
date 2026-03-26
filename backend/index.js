@@ -10,15 +10,15 @@ app.use(express.json());
 const INCREMENT = 0.15;      // ₹0.15 Crore minimum bid increment
 const MAX_TIME = 180;        // 3 minutes timer (180 seconds)
 const MAX_BUDGET = 110.00;   // ₹110 Crore budget per team
-const MAX_PLAYERS = 13;      // Maximum squad size
+const MAX_PLAYERS = 15;      // Maximum squad size
 const MAX_FOREIGN = 4;       // Maximum foreign players per team
 
 // Role limits per team
 const ROLE_LIMITS = {
-  'Batsman': 4,
-  'Bowler': 4,
-  'All-rounder': 3,
-  'Wicketkeeper': 2,
+  'Batsman': 6,
+  'Bowler': 7,
+  'All-rounder': 4,
+  'Wicketkeeper': 3,
 };
 
 // Indian countries (everyone not in FOREIGN_COUNTRIES is considered Indian)

@@ -8,9 +8,9 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 const MAX_TIME = 180; // 3 minutes
 
 // ─── Auction Rule Constants (mirrored from backend) ──────────────────────────
-const MAX_PLAYERS = 13;
+const MAX_PLAYERS = 15;
 const MAX_FOREIGN = 4;
-const ROLE_LIMITS = { 'Batsman': 4, 'Bowler': 4, 'All-rounder': 3, 'Wicketkeeper': 2 };
+const ROLE_LIMITS = { 'Batsman': 6, 'Bowler': 7, 'All-rounder': 4, 'Wicketkeeper': 3 };
 
 function formatCr(v) { return '₹' + Number(v).toFixed(2) + ' Cr'; }
 function formatTime(s) {
@@ -346,9 +346,9 @@ export default function LiveAuctionPage() {
               <ul>
                 <li>Budget: <span>₹110 Cr / team</span></li>
                 <li>Increment: <span>₹0.15 Cr</span></li>
-                <li>Squad: <span>Max 13 players</span></li>
+                <li>Squad: <span>Max 15 players</span></li>
                 <li>Foreign: <span>Max 4 / team</span></li>
-                <li>Roles: <span>4 BAT · 4 BWL · 3 AR · 2 WK</span></li>
+                <li>Roles: <span>6 BAT · 7 BWL · 4 AR · 3 WK</span></li>
                 <li>Player: <span>{player ? player.name : '—'}</span></li>
                 <li>Status: <span>{auction.status}</span></li>
               </ul>
@@ -412,12 +412,12 @@ export default function LiveAuctionPage() {
                   fontSize: '11px', color: '#aaa', padding: '6px 0', marginBottom: '6px',
                   borderTop: '1px solid rgba(255,255,255,0.07)', borderBottom: '1px solid rgba(255,255,255,0.07)'
                 }}>
-                  <span>👤 Squad: <strong style={{color: totalCount >= 13 ? '#f87171' : '#86efac'}}>{totalCount}/{MAX_PLAYERS}</strong></span>
+                  <span>👤 Squad: <strong style={{color: totalCount >= 15 ? '#f87171' : '#86efac'}}>{totalCount}/{MAX_PLAYERS}</strong></span>
                   <span>🌐 Foreign: <strong style={{color: foreignCount >= 4 ? '#f87171' : '#fbbf24'}}>{foreignCount}/{MAX_FOREIGN}</strong></span>
-                  <span>🏏 Bat: <strong style={{color: roleCounts['Batsman'] >= 4 ? '#f87171' : '#cbd5e1'}}>{roleCounts['Batsman']}/4</strong></span>
-                  <span>🎯 Bowl: <strong style={{color: roleCounts['Bowler'] >= 4 ? '#f87171' : '#cbd5e1'}}>{roleCounts['Bowler']}/4</strong></span>
-                  <span>⚡ AR: <strong style={{color: roleCounts['All-rounder'] >= 3 ? '#f87171' : '#cbd5e1'}}>{roleCounts['All-rounder']}/3</strong></span>
-                  <span>🧤 WK: <strong style={{color: roleCounts['Wicketkeeper'] >= 2 ? '#f87171' : '#cbd5e1'}}>{roleCounts['Wicketkeeper']}/2</strong></span>
+                  <span>🏏 Bat: <strong style={{color: roleCounts['Batsman'] >= 6 ? '#f87171' : '#cbd5e1'}}>{roleCounts['Batsman']}/6</strong></span>
+                  <span>🎯 Bowl: <strong style={{color: roleCounts['Bowler'] >= 7 ? '#f87171' : '#cbd5e1'}}>{roleCounts['Bowler']}/7</strong></span>
+                  <span>⚡ AR: <strong style={{color: roleCounts['All-rounder'] >= 4 ? '#f87171' : '#cbd5e1'}}>{roleCounts['All-rounder']}/4</strong></span>
+                  <span>🧤 WK: <strong style={{color: roleCounts['Wicketkeeper'] >= 3 ? '#f87171' : '#cbd5e1'}}>{roleCounts['Wicketkeeper']}/3</strong></span>
                 </div>
 
                 <button
@@ -458,7 +458,7 @@ export default function LiveAuctionPage() {
               </button>
             </div>
             <div className={styles.footerNote}>
-              Rules enforced: ₹110 Cr budget · ₹0.15 Cr increment · 3-min timer · 13 players · 4 overseas · role caps
+              Rules enforced: ₹110 Cr budget · ₹0.15 Cr increment · 3-min timer · 15 players · 4 overseas · role caps
             </div>
           </article>
 
