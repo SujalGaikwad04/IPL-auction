@@ -80,6 +80,52 @@ app.get('/api/teams', async (req, res) => {
   }
 });
 
+// Admin: Add new team
+app.post('/api/teams', async (req, res) => {
+  const { code, name, purse } = req.body;
+  const initialPurse = purse ? parseFloat(purse) : 110.00;
+  
+  if (!code || !name) {
+    return res.status(400).json({ error: 'Team code and name are required' });
+  }
+  
+  try {
+    const { rows: existing } = await query(`SELECT * FROM teams WHERE code=$1`, [code]);
+    if (existing.length > 0) {
+      return res.status(400).json({ error: 'Team code already exists' });
+    }
+    
+    await query(`INSERT INTO teams (code, name, purse, players_bought, total_spent) VALUES ($1, $2, $3, 0, 0)`, [code, name, initialPurse]);
+    
+    res.json({ success: true, message: `Team ${name} added successfully` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Edit team name
+app.put('/api/teams/:code', async (req, res) => {
+  const { code } = req.params;
+  const { name } = req.body;
+  
+  if (!name) {
+    return res.status(400).json({ error: 'Team name is required' });
+  }
+  
+  try {
+    const { rows: existing } = await query(`SELECT * FROM teams WHERE code=$1`, [code]);
+    if (existing.length === 0) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+    
+    await query(`UPDATE teams SET name=$1 WHERE code=$2`, [name, code]);
+    
+    res.json({ success: true, message: `Team renamed to ${name}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── API: Squad Eligibility Check ────────────────────────────────────────────
 // Returns squad composition + whether this team can bid on the current player
 app.get('/api/teams/:code/can-bid', async (req, res) => {

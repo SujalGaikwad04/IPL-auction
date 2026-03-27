@@ -15,6 +15,12 @@ export default function TeamsOverviewPage() {
   const isAdmin = localStorage.getItem('isAdmin') === 'true';
   const [editPlayerId, setEditPlayerId] = useState(null);
   const [editPriceInput, setEditPriceInput] = useState('');
+  
+  // New Team Management States
+  const [showAddTeam, setShowAddTeam] = useState(false);
+  const [newTeam, setNewTeam] = useState({ code: '', name: '', purse: 110.00 });
+  const [editingTeamCode, setEditingTeamCode] = useState(null);
+  const [editingTeamName, setEditingTeamName] = useState('');
 
   const fetchTeamsForce = async (currModalCode) => {
     try {
@@ -71,6 +77,41 @@ export default function TeamsOverviewPage() {
         fetchTeamsForce(modal?.code);
       }
     } catch(err) { console.error(err); }
+  };
+
+  const handleAddTeam = async () => {
+    try {
+      if (!newTeam.code || !newTeam.name) return window.alert('Name and Code are required!');
+      const res = await fetch(`${API_BASE}/teams`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(newTeam)
+      });
+      const data = await res.json();
+      if (data.error) window.alert(data.error);
+      else {
+        setShowAddTeam(false);
+        setNewTeam({ code: '', name: '', purse: 110.00 });
+        fetchTeamsForce(modal?.code);
+      }
+    } catch(err) { console.error(err); }
+  };
+
+  const handleRenameTeam = async (code) => {
+    if (!editingTeamName) return;
+    try {
+      const res = await fetch(`${API_BASE}/teams/${code}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name: editingTeamName })
+      });
+      const data = await res.json();
+      if (data.error) window.alert(data.error);
+      else {
+        setEditingTeamCode(null);
+        fetchTeamsForce(modal?.code);
+      }
+    } catch (err) { console.error(err); }
   };
 
   const totalPlayersSold = Object.values(squads).flat().length;
@@ -135,10 +176,42 @@ export default function TeamsOverviewPage() {
 
       {/* Teams Grid */}
       <section className={`${styles.section} fade-up`} style={{animationDelay:'.12s'}}>
-        <div className={styles.sectionHead}>
-          <h2>All Teams</h2>
-          <span className={styles.sectionChip}>Live Purses & Squads</span>
+        <div className={styles.sectionHead} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2>All Teams</h2>
+            <span className={styles.sectionChip}>Live Purses & Squads</span>
+          </div>
+          {isAdmin && (
+            <button 
+              onClick={() => setShowAddTeam(!showAddTeam)} 
+              style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              + Add New Team
+            </button>
+          )}
         </div>
+
+        {/* Add Team Inline Form */}
+        {isAdmin && showAddTeam && (
+          <div style={{ marginBottom: '20px', padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1, minWidth: '150px' }}>
+              <label style={{ fontSize: '0.8rem', color: '#ccc' }}>Team Code (e.g. MI, CSK)</label>
+              <input value={newTeam.code} onChange={e => setNewTeam({...newTeam, code: e.target.value})} placeholder="Code" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #444', background: '#111', color: 'white' }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 2, minWidth: '200px' }}>
+              <label style={{ fontSize: '0.8rem', color: '#ccc' }}>Full Team Name</label>
+              <input value={newTeam.name} onChange={e => setNewTeam({...newTeam, name: e.target.value})} placeholder="e.g. Mumbai Indians" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #444', background: '#111', color: 'white' }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1, minWidth: '100px' }}>
+              <label style={{ fontSize: '0.8rem', color: '#ccc' }}>Starting Purse (Cr)</label>
+              <input type="number" step="1" value={newTeam.purse} onChange={e => setNewTeam({...newTeam, purse: parseFloat(e.target.value)})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #444', background: '#111', color: 'white' }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', paddingTop: '20px' }}>
+              <button onClick={handleAddTeam} style={{ background: '#22c55e', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Save Team</button>
+            </div>
+          </div>
+        )}
+
         <div className={styles.teamsGrid}>
           {loading ? <div style={{color:'white'}}>Loading live data...</div> : teams.map((team, i) => {
             const teamSquad = squads[team.code] || [];
@@ -147,7 +220,28 @@ export default function TeamsOverviewPage() {
             <div key={team.code} className={`${styles.teamCard} fade-up`} style={{animationDelay:`${0.05*(i+1)}s`}}>
               <div className={styles.teamTop}>
                 <div>
-                  <h3>{team.name}</h3>
+                  {editingTeamCode === team.code && isAdmin ? (
+                    <div style={{ display: 'flex', gap: '5px', alignItems: 'center', marginBottom: '4px' }}>
+                      <input 
+                        value={editingTeamName} 
+                        onChange={e => setEditingTeamName(e.target.value)} 
+                        autoFocus
+                        style={{ padding: '4px 6px', width: '140px', background: '#111', color: '#fff', border: '1px solid #444', borderRadius: '4px' }}
+                      />
+                      <button onClick={() => handleRenameTeam(team.code)} style={{ padding: '4px 8px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>Save</button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <h3 style={{ margin: 0 }}>{team.name}</h3>
+                      {isAdmin && (
+                        <button 
+                          title="Rename team"
+                          onClick={() => { setEditingTeamCode(team.code); setEditingTeamName(team.name); }} 
+                          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#999', fontSize: '1rem', padding: 0 }}
+                        >✏️</button>
+                      )}
+                    </div>
+                  )}
                   <div className={styles.muted}>{team.code}</div>
                 </div>
                 <div className={styles.teamLogo}>{team.code}</div>
