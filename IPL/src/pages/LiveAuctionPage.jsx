@@ -82,6 +82,10 @@ export default function LiveAuctionPage() {
   const [searchRole, setSearchRole] = useState('');
   const [queueLoading, setQueueLoading] = useState(false);
 
+  // Manual Sell State
+  const [manualTeam, setManualTeam] = useState('');
+  const [manualPrice, setManualPrice] = useState('');
+
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2600);
@@ -156,6 +160,33 @@ export default function LiveAuctionPage() {
       });
       fetchState();
     } catch (e) { console.error(e); }
+  };
+
+  const markManualSold = async () => {
+    if (!manualTeam || !manualPrice) return showToast('❌ Select team and enter price');
+    const priceNum = parseFloat(manualPrice);
+    if (isNaN(priceNum) || priceNum <= 0) return showToast('❌ Enter a valid positive price');
+    
+    try {
+      const res = await fetch(`${API_BASE}/auction/manual-sell`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team_code: manualTeam, sold_price: priceNum })
+      });
+      const data = await res.json();
+      if (data.error) return showToast('❌ ' + data.error);
+      
+      setSoldBanner({
+        text: `✅ Manually Sold to ${data.team.name} for ${formatCr(data.player.sold_price)}`,
+        bg: 'rgba(34,197,94,.10)', border: 'rgba(34,197,94,.25)', color: '#dfffe8'
+      });
+      setManualTeam('');
+      setManualPrice('');
+      fetchState();
+    } catch (e) {
+      console.error(e);
+      showToast('❌ Failed to process manual sale');
+    }
   };
 
   const markUnsold = async () => {
@@ -457,6 +488,40 @@ export default function LiveAuctionPage() {
                 🔄 Reset Auction
               </button>
             </div>
+
+            {/* Manual Sell Section */}
+            <div style={{ marginTop: '20px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <h3 style={{ fontSize: '0.95rem', marginBottom: '10px', color: '#fff' }}>⚡ Direct Manual Sell</h3>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <select 
+                  className={styles.searchInput} 
+                  style={{ flex: 1, minWidth: '150px', padding: '10px' }}
+                  value={manualTeam}
+                  onChange={e => setManualTeam(e.target.value)}
+                >
+                  <option value="">-- Select Team --</option>
+                  {teams.map(t => <option key={t.code} value={t.code}>{t.name} ({t.code})</option>)}
+                </select>
+                <input 
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className={styles.searchInput}
+                  style={{ width: '120px', padding: '10px' }}
+                  placeholder="Price (Cr)"
+                  value={manualPrice}
+                  onChange={e => setManualPrice(e.target.value)}
+                />
+                <button 
+                  className={`${styles.action} ${styles.green}`} 
+                  style={{ width: 'auto', padding: '10px 16px', fontSize: '0.9rem' }}
+                  onClick={() => openModal('Confirm Direct Sell?', `Are you sure you want to instantly sell to ${manualTeam} for ₹${manualPrice} Cr?`, markManualSold)}
+                >
+                  Confirm Quick Sell
+                </button>
+              </div>
+            </div>
+
             <div className={styles.footerNote}>
               Rules enforced: ₹110 Cr budget · ₹0.15 Cr increment · 3-min timer · 15 players · 4 overseas · role caps
             </div>

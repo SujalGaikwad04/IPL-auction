@@ -484,6 +484,71 @@ app.post('/api/auction/sold', async (req, res) => {
   }
 });
 
+// ─── Admin: Manual Override Sell ─────────────────────────────────────────────
+app.post('/api/auction/manual-sell', async (req, res) => {
+  const { team_code, sold_price } = req.body;
+  if (!team_code || !sold_price || sold_price <= 0) {
+    return res.status(400).json({ error: 'Valid team code and price required' });
+  }
+
+  try {
+    const { rows: aRows } = await query(`SELECT * FROM auction_state WHERE id=1`);
+    const auction = aRows[0];
+
+    const { rows: tRows } = await query(`SELECT * FROM teams WHERE code=$1`, [team_code]);
+    const team = tRows[0];
+    if (!team) return res.status(404).json({ error: 'Team not found' });
+
+    const { rows: pRows } = await query(`SELECT * FROM players WHERE id=$1`, [auction.current_player_id]);
+    const player = pRows[0];
+    if (!player) return res.status(404).json({ error: 'No active player to sell' });
+
+    // Final safety checks
+    const { roleCounts, foreignCount, totalCount } = await getSquadComposition(team_code);
+
+    if (totalCount >= MAX_PLAYERS) {
+      return res.status(400).json({ error: `Cannot sell: ${team.name} squad is already full (${MAX_PLAYERS} players)` });
+    }
+
+    if (isForeign(player.country) && foreignCount >= MAX_FOREIGN) {
+      return res.status(400).json({ error: `Cannot sell: ${team.name} has reached max foreign players (${MAX_FOREIGN})` });
+    }
+
+    const roleLimit = ROLE_LIMITS[player.role];
+    if (roleLimit !== undefined && (roleCounts[player.role] || 0) >= roleLimit) {
+      return res.status(400).json({ error: `Cannot sell: ${team.name} has reached max ${player.role}s (${roleLimit})` });
+    }
+
+    if (parseFloat(team.purse) < sold_price) {
+      return res.status(400).json({ error: `Cannot sell: ${team.name} has insufficient purse` });
+    }
+
+    // Calculate new purse
+    const newPurse = +(parseFloat(team.purse) - sold_price).toFixed(2);
+    const newSpent = +(parseFloat(team.total_spent) + sold_price).toFixed(2);
+
+    // Perform DB updates
+    await query(`UPDATE teams SET purse=$1, total_spent=$2, players_bought=players_bought+1 WHERE code=$3`, [newPurse, newSpent, team.code]);
+    await query(`UPDATE players SET status='sold', sold_to=$1, sold_price=$2 WHERE id=$3`, [team.code, sold_price, player.id]);
+    await query(`INSERT INTO squads (team_code, player_id, name, role, country, price) VALUES ($1, $2, $3, $4, $5, $6)`,
+      [team.code, player.id, player.name, player.role, player.country, sold_price]);
+    
+    // Update auction state
+    await query(`UPDATE auction_state SET status='sold', current_bid=$1, leading_team_code=$2, leading_team_name=$3 WHERE id=1`, 
+      [sold_price, team.code, team.name]);
+
+    // Remove from queue if present
+    await query(`DELETE FROM player_queue WHERE player_id=?`, [player.id]);
+
+    await logHistory(team.code, `Manually Sold to ${team.name}`, sold_price, 'just now');
+
+    player.sold_price = sold_price;
+    res.json({ success: true, team, player });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Admin: Mark Unsold
 app.post('/api/auction/unsold', async (req, res) => {
   try {
