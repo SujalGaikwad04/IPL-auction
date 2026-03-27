@@ -12,24 +12,66 @@ export default function TeamsOverviewPage() {
   const [teams, setTeams] = useState([]);
   const [squads, setSquads] = useState({});
   const [loading, setLoading] = useState(true);
+  const isAdmin = localStorage.getItem('isAdmin') === 'true';
+  const [editPlayerId, setEditPlayerId] = useState(null);
+  const [editPriceInput, setEditPriceInput] = useState('');
+
+  const fetchTeamsForce = async (currModalCode) => {
+    try {
+      const res = await fetch(`${API_BASE}/teams`);
+      const data = await res.json();
+      setTeams(data.teams || []);
+      setSquads(data.squads || {});
+      
+      // Update modal data securely using code passed or state
+      if (currModalCode) {
+        const updatedTeam = (data.teams || []).find(t => t.code === currModalCode);
+        const updatedSquad = (data.squads || {})[currModalCode] || [];
+        if (updatedTeam) setModal({ ...updatedTeam, fullSquad: updatedSquad });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/teams`);
-        const data = await res.json();
-        setTeams(data.teams || []);
-        setSquads(data.squads || {});
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTeams();
-    const int = setInterval(fetchTeams, 3000);
+    fetchTeamsForce(modal?.code);
+    const int = setInterval(() => fetchTeamsForce(modal?.code), 3000);
     return () => clearInterval(int);
-  }, []);
+  }, [modal?.code]);
+
+  const handleCancelSold = async (player_id, team_code) => {
+    if (!window.confirm('Are you sure you want to cancel this player sale and return them to the unsold/pending list?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/auction/cancel-sold`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ player_id, team_code })
+      });
+      const data = await res.json();
+      if (data.error) alert(data.error);
+      else fetchTeamsForce(modal?.code);
+    } catch(err) { console.error(err); }
+  };
+
+  const handleEditPrice = async (player_id, team_code) => {
+    if (!editPriceInput) return;
+    try {
+      const res = await fetch(`${API_BASE}/auction/edit-price`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ player_id, team_code, new_price: editPriceInput })
+      });
+      const data = await res.json();
+      if (data.error) alert(data.error);
+      else {
+        setEditPlayerId(null);
+        fetchTeamsForce(modal?.code);
+      }
+    } catch(err) { console.error(err); }
+  };
 
   const totalPlayersSold = Object.values(squads).flat().length;
   // Calculate most expensive dynamically
@@ -153,10 +195,40 @@ export default function TeamsOverviewPage() {
               {modal.fullSquad.length === 0 ? (
                 <div style={{color:'#666', textAlign:'center', padding:'20px'}}>No players recruited yet.</div>
               ) : modal.fullSquad.map((p) => (
-                <div key={p.name} className={styles.squadItem}>
-                  <div><strong>{p.name}</strong></div>
+                <div key={p.name} className={styles.squadItem} style={{ flexWrap: 'wrap' }}>
+                  <div style={{minWidth: '100px'}}><strong>{p.name}</strong></div>
                   <div><span className={styles.rolePill}>{p.role}</span></div>
-                  <div className={styles.price}>{formatCr(p.price)}</div>
+                  
+                  {editPlayerId === p.player_id && isAdmin ? (
+                    <div style={{ display: 'flex', gap: '5px', alignItems: 'center', marginLeft: 'auto' }}>
+                      <input 
+                        type="number" step="0.01" min="0"
+                        value={editPriceInput} 
+                        onChange={e => setEditPriceInput(e.target.value)} 
+                        style={{ width: '70px', padding: '4px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '4px' }}
+                      />
+                      <button onClick={() => handleEditPrice(p.player_id, modal.code)} style={{ padding: '4px 8px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Save</button>
+                      <button onClick={() => setEditPlayerId(null)} style={{ padding: '4px 8px', background: 'transparent', color: '#999', border: 'none', cursor: 'pointer' }}>✕</button>
+                    </div>
+                  ) : (
+                    <div className={styles.price} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: 'auto' }}>
+                      {formatCr(p.price)}
+                      {isAdmin && (
+                        <div style={{ display: 'flex', gap: '5px' }}>
+                          <button 
+                            onClick={() => { setEditPlayerId(p.player_id); setEditPriceInput(parseFloat(p.price)); }} 
+                            style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
+                            title="Edit Price"
+                          >✏️</button>
+                          <button 
+                            onClick={() => handleCancelSold(p.player_id, modal.code)} 
+                            style={{ background: 'rgba(239,68,68,0.2)', border: 'none', color: '#f87171', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
+                            title="Cancel Sale"
+                          >✕</button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

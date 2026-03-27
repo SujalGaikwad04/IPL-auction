@@ -580,6 +580,86 @@ app.post('/api/auction/end', async (req, res) => {
   }
 });
 
+// ─── Admin: Cancel Sold Player ──────────────────────────────────────────────
+app.post('/api/auction/cancel-sold', async (req, res) => {
+  const { player_id, team_code } = req.body;
+  try {
+    const { rows: tRows } = await query(`SELECT * FROM teams WHERE code=$1`, [team_code]);
+    const team = tRows[0];
+    if (!team) return res.status(404).json({ error: 'Team not found' });
+
+    const { rows: pRows } = await query(`SELECT * FROM players WHERE id=$1`, [player_id]);
+    const player = pRows[0];
+    if (!player) return res.status(404).json({ error: 'Player not found' });
+
+    if (player.status !== 'sold' || player.sold_to !== team_code) {
+      return res.status(400).json({ error: 'Player is not sold to this team' });
+    }
+
+    const refundAmount = parseFloat(player.sold_price);
+
+    // Update Team purse and spent
+    const newPurse = +(parseFloat(team.purse) + refundAmount).toFixed(2);
+    const newSpent = +(parseFloat(team.total_spent) - refundAmount).toFixed(2);
+    const newBought = Math.max(0, parseInt(team.players_bought) - 1);
+
+    await query(`UPDATE teams SET purse=$1, total_spent=$2, players_bought=$3 WHERE code=$4`, [newPurse, newSpent, newBought, team.code]);
+    
+    // Delete from squads
+    await query(`DELETE FROM squads WHERE player_id=$1 AND team_code=$2`, [player.id, team.code]);
+    
+    // Reset player
+    await query(`UPDATE players SET status='pending', sold_to=NULL, sold_price=NULL WHERE id=$1`, [player.id]);
+
+    await logHistory(team.code, `Cancelled sale of ${player.name}`, refundAmount, 'just now');
+
+    res.json({ success: true, message: `Sale cancelled. Refunded ${refundAmount} Cr.` });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Admin: Edit Sold Price ─────────────────────────────────────────────────
+app.post('/api/auction/edit-price', async (req, res) => {
+  const { player_id, team_code, new_price } = req.body;
+  const price = parseFloat(new_price);
+  if (isNaN(price) || price <= 0) return res.status(400).json({ error: 'Invalid price' });
+
+  try {
+    const { rows: tRows } = await query(`SELECT * FROM teams WHERE code=$1`, [team_code]);
+    const team = tRows[0];
+    if (!team) return res.status(404).json({ error: 'Team not found' });
+
+    const { rows: pRows } = await query(`SELECT * FROM players WHERE id=$1`, [player_id]);
+    const player = pRows[0];
+    if (!player) return res.status(404).json({ error: 'Player not found' });
+
+    if (player.status !== 'sold' || player.sold_to !== team_code) {
+      return res.status(400).json({ error: 'Player is not sold to this team' });
+    }
+
+    const oldPrice = parseFloat(player.sold_price);
+    const diff = +(price - oldPrice).toFixed(2);
+
+    if (parseFloat(team.purse) < diff) {
+      return res.status(400).json({ error: `Not enough purse to cover the price increase of ₹${diff} Cr` });
+    }
+
+    const newPurse = +(parseFloat(team.purse) - diff).toFixed(2);
+    const newSpent = +(parseFloat(team.total_spent) + diff).toFixed(2);
+
+    await query(`UPDATE teams SET purse=$1, total_spent=$2 WHERE code=$3`, [newPurse, newSpent, team.code]);
+    await query(`UPDATE squads SET price=$1 WHERE player_id=$2 AND team_code=$3`, [price, player.id, team.code]);
+    await query(`UPDATE players SET sold_price=$1 WHERE id=$2`, [price, player.id]);
+
+    await logHistory(team.code, `Price changed for ${player.name} to ${price} Cr`, price, 'just now');
+
+    res.json({ success: true, message: `Price updated to ${price} Cr.` });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Admin: Full Reset (for testing) ────────────────────────────────────────
 app.post('/api/auction/reset', async (req, res) => {
   try {
